@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/cturner8/binmate/dev/schema.json",
+  "$schema": "./schema.json",
   "version": 1,
   "binaries": [ 
     { 

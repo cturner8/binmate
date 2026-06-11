@@ -32,7 +32,7 @@ See [demo.md](./DEMO.md) for a demo and screenshots.
 Install the latest version using our install script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | bash
 ```
 
 By default, the installer now auto-imports the installed `binmate` binary for self-management using its resolved release URL and version.
@@ -40,19 +40,19 @@ By default, the installer now auto-imports the installed `binmate` binary for se
 Install a specific version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_VERSION=v1.0.0 bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_VERSION=v1.0.0 bash
 ```
 
 Install to a custom directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_INSTALL_DIR=$HOME/.local/bin bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_INSTALL_DIR=$HOME/.local/bin bash
 ```
 
 Skip automatic post-install self-import:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_SKIP_AUTO_IMPORT=1 bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_SKIP_AUTO_IMPORT=1 bash
 ```
 
 #### Windows (PowerShell)
@@ -60,28 +60,28 @@ curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | 
 Install the latest version using our PowerShell install script:
 
 ```powershell
-irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+irm https://binmate.cturner8.dev/install.ps1 | iex
 ```
 
 Install a specific version:
 
 ```powershell
 $env:BINMATE_VERSION = "v1.0.0"
-irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+irm https://binmate.cturner8.dev/install.ps1 | iex
 ```
 
 Install to a custom directory:
 
 ```powershell
 $env:BINMATE_INSTALL_DIR = "$env:LOCALAPPDATA\binmate\bin"
-irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+irm https://binmate.cturner8.dev/install.ps1 | iex
 ```
 
 Skip automatic post-install self-import:
 
 ```powershell
 $env:BINMATE_SKIP_AUTO_IMPORT = "1"
-irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+irm https://binmate.cturner8.dev/install.ps1 | iex
 ```
 
 ### Manual Installation
@@ -221,7 +221,7 @@ Configuration is stored in `~/.config/.binmate/config.json`:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/cturner8/binmate/main/schema.json",
+  "$schema": "https://binmate.cturner8.dev/schema.json",
   "version": 1,
   "binaries": [
     {
@@ -235,13 +235,24 @@ Configuration is stored in `~/.config/.binmate/config.json`:
 }
 ```
 
+**If using VSCode, you'll need to allow use of the binmate json schema in `.vscode/settings.json`**:
+
+```jsonc
+// .vscode/settings.json
+{
+ "json.schemaDownload.trustedDomains": {
+    "https://binmate.cturner8.dev": true,
+  }
+}
+```
+
 ### Global Configuration
 
 You can define global defaults that apply to all binaries unless overridden:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/cturner8/binmate/main/schema.json",
+  "$schema": "https://binmate.cturner8.dev/schema.json",
   "version": 1,
   "global": {
     "installPath": "/usr/local/bin",
