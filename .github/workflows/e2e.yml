@@ -116,7 +116,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
       
       - name: Run E2E tests (Unix)
         if: matrix.os != 'windows'
@@ -138,7 +138,7 @@ jobs:
       
       - name: Upload test logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: e2e-test-logs-${{ matrix.os }}-${{ matrix.arch }}
           path: |
