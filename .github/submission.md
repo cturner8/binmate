@@ -7,7 +7,7 @@ title: binmate - a binary version manager
 ## What I Built
 <!-- Provide an overview of your application and what it means to you. -->
 
-**[binmate](https://github.com/cturner8/copilot-cli-challenge)** is a CLI/TUI application for managing binary installations from GitHub releases. It provides an easy way to install, manage, and switch between different versions of command-line tools.
+**[binmate](https://github.com/cturner8/binmate)** is a CLI/TUI application for managing binary installations from GitHub releases. It provides an easy way to install, manage, and switch between different versions of command-line tools.
 
 ### Why I Built It
 
@@ -36,9 +36,9 @@ Additionally, inspired by tools such as [nvm](https://github.com/nvm-sh/nvm) for
 
 ## Demo
 
-Demo and screenshots are available on [GitHub](https://github.com/cturner8/copilot-cli-challenge/blob/main/DEMO.md)
+Demo and screenshots are available on [GitHub](https://github.com/cturner8/binmate/blob/main/DEMO.md)
 
-[GitHub Repository](https://github.com/cturner8/copilot-cli-challenge)
+[GitHub Repository](https://github.com/cturner8/binmate)
 
 ## My Experience with GitHub Copilot CLI
 <!-- Explain how you used GitHub Copilot CLI while building your project and how it impacted your development experience. -->
@@ -47,9 +47,9 @@ Development of the application used the following GitHub Copilot CLI capabilitie
 
 - **Agent instructions** for baseline codebase structure and standards, later extended to also heavily utilise [beads](https://github.com/steveyegge/beads) for improved task tracking and persistent agent memory.
 - **Custom agents** to provide more focused and specialised agents. The following were originally sourced from the [awesome-copilot](https://github.com/github/awesome-copilot/blob/main/docs/README.agents.md) repository:
-    - Critical Thinking, see [critical-thinking.agent.md](https://github.com/cturner8/copilot-cli-challenge/blob/main/.github/agents/critical-thinking.agent.md)
-    - Go Development Expert, revised from "Go MCP Server Development Expert" to be a generic go agent, see [go-expert.agent.md](https://github.com/cturner8/copilot-cli-challenge/blob/main/.github/agents/go-expert.agent.md)
-    - SQLite Database Administrator, revised from "PostgreSQL Database Administrator" agent, see [sqlite-dba.agent.md](https://github.com/cturner8/copilot-cli-challenge/blob/main/.github/agents/sqlite-dba.agent.md)
+    - Critical Thinking, see [critical-thinking.agent.md](https://github.com/cturner8/binmate/blob/main/.github/agents/critical-thinking.agent.md)
+    - Go Development Expert, revised from "Go MCP Server Development Expert" to be a generic go agent, see [go-expert.agent.md](https://github.com/cturner8/binmate/blob/main/.github/agents/go-expert.agent.md)
+    - SQLite Database Administrator, revised from "PostgreSQL Database Administrator" agent, see [sqlite-dba.agent.md](https://github.com/cturner8/binmate/blob/main/.github/agents/sqlite-dba.agent.md)
 - **MCP**
     - `context7` for providing up to date documentation for packages and libraries.
     - The `GitHub MCP` built into Copilot CLI was ideal for allowing the agent direct access to search public codebases, access to action workflow logs for troubleshooting, allowing follow up tasks and recommendations to be extracted from PR comments.

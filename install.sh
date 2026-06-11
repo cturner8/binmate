@@ -3,7 +3,7 @@
 # binmate installer
 # 
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | bash
 #
 # Environment variables:
 #   BINMATE_VERSION     - Specific version to install (e.g., "v1.0.0" or "latest", default: "latest")
@@ -20,7 +20,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-GITHUB_REPO="cturner8/copilot-cli-challenge"
+GITHUB_REPO="cturner8/binmate"
 BINARY_NAME="binmate"
 VERSION="${BINMATE_VERSION:-latest}"
 INSTALL_DIR="${BINMATE_INSTALL_DIR:-"$HOME/.local/bin"}"
@@ -230,7 +230,7 @@ main() {
         validate_version "$VERSION"
     fi
 
-    local archive_name="copilot-cli-challenge_${VERSION#v}_${platform}.tar.gz"
+    local archive_name="binmate_${VERSION#v}_${platform}.tar.gz"
     local download_url="https://github.com/${GITHUB_REPO}/releases/download/${VERSION}/${archive_name}"
     
     # Download and install

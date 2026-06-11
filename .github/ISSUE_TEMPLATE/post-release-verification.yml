@@ -10,7 +10,7 @@ body:
         
         Use this issue to track verification of a new binmate release across all supported platforms and architectures.
         
-        **Automated E2E Tests**: [Run E2E Workflow](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/e2e.yml)
+        **Automated E2E Tests**: [Run E2E Workflow](https://github.com/cturner8/binmate/actions/workflows/e2e.yml)
   
   - type: input
     id: version
@@ -26,7 +26,7 @@ body:
     attributes:
       label: Release URL
       description: Link to the GitHub release
-      placeholder: https://github.com/cturner8/copilot-cli-challenge/releases/tag/v1.0.0
+      placeholder: https://github.com/cturner8/binmate/releases/tag/v1.0.0
     validations:
       required: false
   
@@ -193,7 +193,7 @@ body:
       label: Automated E2E Test Results
       description: Link to or paste results from automated E2E workflow runs
       placeholder: |
-        Link to workflow run: https://github.com/cturner8/copilot-cli-challenge/actions/runs/...
+        Link to workflow run: https://github.com/cturner8/binmate/actions/runs/...
         
         All platforms: ✅ Passed
     validations:

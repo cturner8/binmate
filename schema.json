@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/github/copilot-cli-challenge/schema.json",
+  "$id": "https://github.com/github/binmate/schema.json",
   "title": "binmate Configuration",
   "description": "Configuration schema for binmate CLI",
   "type": "object",

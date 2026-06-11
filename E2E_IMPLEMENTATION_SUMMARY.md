@@ -22,7 +22,7 @@ A PowerShell script that provides the same installation experience as `install.s
 
 **Usage:**
 ```powershell
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 ```
 
 ### 2. Unix E2E Test Script (`e2e-test.sh`)
