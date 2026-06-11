@@ -151,7 +151,7 @@ function Download-TestConfig {
     $configDir = Join-Path $env:APPDATA ".binmate"
     $configFile = Join-Path $configDir "config.json"
     $localConfig = Join-Path $script:ScriptDir "config.json"
-    $remoteConfig = "https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/config.json"
+    $remoteConfig = "https://raw.githubusercontent.com/cturner8/binmate/main/config.json"
 
     New-Item -ItemType Directory -Path $configDir -Force | Out-Null
 
@@ -261,7 +261,7 @@ function Install-Binmate {
     if (-not (Test-Path $installScriptPath)) {
         $installScriptPath = Join-Path $script:TestDir "install.ps1"
         try {
-            Invoke-GitHubWebRequest -Uri "https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1" -OutFile $installScriptPath
+            Invoke-GitHubWebRequest -Uri "https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1" -OutFile $installScriptPath
         }
         catch {
             Test-Failed "Failed to download install.ps1: $_"
@@ -315,7 +315,7 @@ function Install-Binmate {
 
     Log-Test "Resolving release archive URL for $platform"
     try {
-        $release = Invoke-GitHubRestMethod -Uri "https://api.github.com/repos/cturner8/copilot-cli-challenge/releases/tags/$($script:ReleaseTag)"
+        $release = Invoke-GitHubRestMethod -Uri "https://api.github.com/repos/cturner8/binmate/releases/tags/$($script:ReleaseTag)"
         $asset = $release.assets | Where-Object { $_.browser_download_url -match "_$platform\.zip$" } | Select-Object -First 1
         if (-not $asset) {
             Test-Failed "Could not resolve archive URL for platform $platform"
