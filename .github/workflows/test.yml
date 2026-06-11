@@ -37,7 +37,7 @@ jobs:
           CGO_ENABLED: 1
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         if: always()
         with:
           files: ./coverage.out
