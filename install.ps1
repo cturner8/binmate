@@ -3,7 +3,7 @@
 # binmate installer for Windows
 # 
 # Usage:
-#   irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+#   irm https://binmate.cturner8.dev/install.ps1 | iex
 #
 # Environment variables:
 #   BINMATE_VERSION     - Specific version to install (e.g., "v1.0.0" or "latest", default: "latest")

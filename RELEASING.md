@@ -114,28 +114,28 @@ For manual verification:
 
 ```bash
 # Test install.sh with latest version
-curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | bash
 
 # Test install.sh with specific version
-curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_VERSION=v1.0.0 bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_VERSION=v1.0.0 bash
 
 # Test with custom install directory
-curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_INSTALL_DIR=/tmp/binmate-test bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_INSTALL_DIR=/tmp/binmate-test bash
 ```
 
 #### Windows (PowerShell)
 
 ```powershell
 # Test install.ps1 with latest version
-irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+irm https://binmate.cturner8.dev/install.ps1 | iex
 
 # Test install.ps1 with specific version
 $env:BINMATE_VERSION = "v1.0.0"
-irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+irm https://binmate.cturner8.dev/install.ps1 | iex
 
 # Test with custom install directory
 $env:BINMATE_INSTALL_DIR = "C:\Temp\binmate-test"
-irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+irm https://binmate.cturner8.dev/install.ps1 | iex
 ```
 
 ### Issue Tracking
