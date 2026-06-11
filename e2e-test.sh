@@ -124,7 +124,7 @@ download_test_config() {
     local config_dir="$HOME/.config/.binmate"
     local config_file="$config_dir/config.json"
     local local_config="$SCRIPT_DIR/config.json"
-    local remote_config="https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/config.json"
+    local remote_config="https://raw.githubusercontent.com/cturner8/binmate/main/config.json"
 
     mkdir -p "$config_dir"
 
@@ -253,7 +253,7 @@ install_binmate() {
     local install_script="$SCRIPT_DIR/install.sh"
     if [ ! -f "$install_script" ]; then
         install_script="$TEST_DIR/install.sh"
-        if ! github_curl "https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh" -o "$install_script"; then
+        if ! github_curl "https://raw.githubusercontent.com/cturner8/binmate/main/install.sh" -o "$install_script"; then
             test_failed "Failed to download install.sh"
             exit 1
         fi
@@ -306,7 +306,7 @@ install_binmate() {
 
     log_test "Resolving release archive URL for ${platform}"
     local release_json=""
-    if ! release_json=$(github_curl "https://api.github.com/repos/cturner8/copilot-cli-challenge/releases/tags/${RELEASE_TAG}"); then
+    if ! release_json=$(github_curl "https://api.github.com/repos/cturner8/binmate/releases/tags/${RELEASE_TAG}"); then
         test_failed "Failed to fetch release metadata for ${RELEASE_TAG}"
         exit 1
     fi

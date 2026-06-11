@@ -3,7 +3,7 @@
 # binmate installer for Windows
 # 
 # Usage:
-#   irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 #
 # Environment variables:
 #   BINMATE_VERSION     - Specific version to install (e.g., "v1.0.0" or "latest", default: "latest")
@@ -14,7 +14,7 @@
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$GITHUB_REPO = "cturner8/copilot-cli-challenge"
+$GITHUB_REPO = "cturner8/binmate"
 $BINARY_NAME = "binmate"
 $script:VERSION = if ($env:BINMATE_VERSION) { $env:BINMATE_VERSION } else { "latest" }
 $INSTALL_DIR = if ($env:BINMATE_INSTALL_DIR) { $env:BINMATE_INSTALL_DIR } else { "$env:LOCALAPPDATA\binmate\bin" }
@@ -221,7 +221,7 @@ function Main {
     
     # Strip 'v' prefix for archive name
     $versionNumber = $VERSION -replace '^v', ''
-    $archiveName = "copilot-cli-challenge_${versionNumber}_${platform}.zip"
+    $archiveName = "binmate_${versionNumber}_${platform}.zip"
     $downloadUrl = "https://github.com/$GITHUB_REPO/releases/download/$VERSION/$archiveName"
     
     # Download and install

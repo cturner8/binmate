@@ -46,7 +46,7 @@ Once the tag is pushed, the following happens automatically:
 
 ### 4. Verify the Release
 
-1. Go to the [Releases page](https://github.com/cturner8/copilot-cli-challenge/releases)
+1. Go to the [Releases page](https://github.com/cturner8/binmate/releases)
 2. Verify the release was created successfully
 3. Run post-release verification (see [Post-Release Verification](#post-release-verification) section below)
 
@@ -58,7 +58,7 @@ After a release is published, comprehensive end-to-end testing should be perform
 
 The repository includes automated E2E tests that can be run via GitHub Actions:
 
-1. Go to the [E2E Tests workflow](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/e2e.yml)
+1. Go to the [E2E Tests workflow](https://github.com/cturner8/binmate/actions/workflows/e2e.yml)
 2. Click "Run workflow"
 3. Specify the version to test (e.g., `v1.0.0` or `latest`)
 4. Select platforms and architectures to test (or use `all` for comprehensive testing)
@@ -114,35 +114,35 @@ For manual verification:
 
 ```bash
 # Test install.sh with latest version
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | bash
 
 # Test install.sh with specific version
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_VERSION=v1.0.0 bash
+curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_VERSION=v1.0.0 bash
 
 # Test with custom install directory
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_INSTALL_DIR=/tmp/binmate-test bash
+curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_INSTALL_DIR=/tmp/binmate-test bash
 ```
 
 #### Windows (PowerShell)
 
 ```powershell
 # Test install.ps1 with latest version
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 
 # Test install.ps1 with specific version
 $env:BINMATE_VERSION = "v1.0.0"
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 
 # Test with custom install directory
 $env:BINMATE_INSTALL_DIR = "C:\Temp\binmate-test"
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 ```
 
 ### Issue Tracking
 
 To track verification progress, create a Post-Release Verification issue:
 
-1. Go to [Issues → New Issue](https://github.com/cturner8/copilot-cli-challenge/issues/new/choose)
+1. Go to [Issues → New Issue](https://github.com/cturner8/binmate/issues/new/choose)
 2. Select "Post-Release Verification" template
 3. Fill in the version and release URL
 4. Use the checklist to track testing progress for each platform
@@ -188,7 +188,7 @@ The `.goreleaser.yml` file configures:
 
 ### Release Workflow Fails
 
-1. Check the [Actions tab](https://github.com/cturner8/copilot-cli-challenge/actions) for error details
+1. Check the [Actions tab](https://github.com/cturner8/binmate/actions) for error details
 2. Common issues:
    - **Tests failing**: Fix tests before releasing
    - **CGO cross-compilation errors**: Ensure cross-compilation tools are installed

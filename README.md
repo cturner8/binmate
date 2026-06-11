@@ -1,8 +1,8 @@
 # DEV GitHub Copilot CLI Challenge
 
-[![Tests](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/test.yml/badge.svg)](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/test.yml)
-[![Release](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/release.yml/badge.svg)](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/release.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cturner8/copilot-cli-challenge)](https://goreportcard.com/report/github.com/cturner8/copilot-cli-challenge)
+[![Tests](https://github.com/cturner8/binmate/actions/workflows/test.yml/badge.svg)](https://github.com/cturner8/binmate/actions/workflows/test.yml)
+[![Release](https://github.com/cturner8/binmate/actions/workflows/release.yml/badge.svg)](https://github.com/cturner8/binmate/actions/workflows/release.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cturner8/binmate)](https://goreportcard.com/report/github.com/cturner8/binmate)
 
 Submission for the [2026 DEV GitHub Copilot CLI challenge](https://dev.to/devteam/join-the-github-copilot-cli-challenge-win-github-universe-tickets-copilot-pro-subscriptions-and-50af).
 
@@ -32,7 +32,7 @@ See [demo.md](./DEMO.md) for a demo and screenshots.
 Install the latest version using our install script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | bash
 ```
 
 By default, the installer now auto-imports the installed `binmate` binary for self-management using its resolved release URL and version.
@@ -40,19 +40,19 @@ By default, the installer now auto-imports the installed `binmate` binary for se
 Install a specific version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_VERSION=v1.0.0 bash
+curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_VERSION=v1.0.0 bash
 ```
 
 Install to a custom directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_INSTALL_DIR=$HOME/.local/bin bash
+curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_INSTALL_DIR=$HOME/.local/bin bash
 ```
 
 Skip automatic post-install self-import:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_SKIP_AUTO_IMPORT=1 bash
+curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | BINMATE_SKIP_AUTO_IMPORT=1 bash
 ```
 
 #### Windows (PowerShell)
@@ -60,39 +60,39 @@ curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main
 Install the latest version using our PowerShell install script:
 
 ```powershell
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 ```
 
 Install a specific version:
 
 ```powershell
 $env:BINMATE_VERSION = "v1.0.0"
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 ```
 
 Install to a custom directory:
 
 ```powershell
 $env:BINMATE_INSTALL_DIR = "$env:LOCALAPPDATA\binmate\bin"
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 ```
 
 Skip automatic post-install self-import:
 
 ```powershell
 $env:BINMATE_SKIP_AUTO_IMPORT = "1"
-irm https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
 ```
 
 ### Manual Installation
 
-Download the appropriate binary for your platform from the [releases page](https://github.com/cturner8/copilot-cli-challenge/releases), extract it, and place it in your PATH.
+Download the appropriate binary for your platform from the [releases page](https://github.com/cturner8/binmate/releases), extract it, and place it in your PATH.
 
 ### Building from Source
 
 ```bash
-git clone https://github.com/cturner8/copilot-cli-challenge.git
-cd copilot-cli-challenge
+git clone https://github.com/cturner8/binmate.git
+cd binmate
 go build -o binmate .
 ```
 
@@ -221,7 +221,7 @@ Configuration is stored in `~/.config/.binmate/config.json`:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/schema.json",
+  "$schema": "https://raw.githubusercontent.com/cturner8/binmate/main/schema.json",
   "version": 1,
   "binaries": [
     {
@@ -241,7 +241,7 @@ You can define global defaults that apply to all binaries unless overridden:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/schema.json",
+  "$schema": "https://raw.githubusercontent.com/cturner8/binmate/main/schema.json",
   "version": 1,
   "global": {
     "installPath": "/usr/local/bin",
