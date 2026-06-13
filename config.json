@@ -1,7 +1,21 @@
 {
   "$schema": "./static/schema.json",
   "version": 1,
+  "global": {
+    "providers": {
+      "github": {
+        "authenticated": true
+      }
+    }
+  },
   "binaries": [ 
+    { 
+      "id": "binmate", 
+      "name": "binmate", 
+      "provider": "github",
+      "path": "cturner8/binmate",
+      "format": ".tar.gz"
+    },
     { 
       "id": "ghcp", 
       "name": "copilot", 
@@ -43,6 +57,186 @@
       "name": "bat", 
       "provider": "github",
       "path": "sharkdp/bat",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "lazysql", 
+      "name": "lazysql", 
+      "provider": "github",
+      "path": "jorgerojas26/lazysql",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "lazydocker", 
+      "name": "lazydocker", 
+      "provider": "github",
+      "path": "jesseduffield/lazydocker",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "lazygit", 
+      "name": "lazygit", 
+      "provider": "github",
+      "path": "jesseduffield/lazygit",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "lazynpm", 
+      "name": "lazynpm", 
+      "provider": "github",
+      "path": "jesseduffield/lazynpm",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "az", 
+      "name": "az", 
+      "provider": "github",
+      "path": "azure/azure-cli",
+      "format": ".zip",
+      "releaseRegex": "azure-cli-"
+    },
+    {
+      "id": "helm", 
+      "name": "helm", 
+      "provider": "github",
+      "path": "helm/helm",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "minikube", 
+      "name": "minikube", 
+      "provider": "github",
+      "path": "kubernetes/minikube",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "kind", 
+      "name": "kind", 
+      "provider": "github",
+      "path": "kubernetes-sigs/kind",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "act", 
+      "name": "act", 
+      "provider": "github",
+      "path": "nektos/act",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "k9s", 
+      "name": "k9s", 
+      "provider": "github",
+      "path": "derailed/k9s",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "opencode", 
+      "name": "opencode", 
+      "provider": "github",
+      "path": "anomalyco/opencode",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "azd", 
+      "name": "azd", 
+      "provider": "github",
+      "path": "azure/azure-dev",
+      "format": ".tar.gz",
+      "releaseRegex": "azure-dev-cli_"
+    },
+    {
+      "id": "codex", 
+      "name": "codex", 
+      "provider": "github",
+      "path": "openai/codex",
+      "format": ".tar.gz",
+      "releaseRegex": "rust-"
+    },
+    {
+      "id": "rg", 
+      "name": "ripgrep", 
+      "provider": "github",
+      "path": "burntsushi/ripgrep",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "pulumi", 
+      "name": "pulumi", 
+      "provider": "github",
+      "path": "pulumi/pulumi",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "caddy", 
+      "name": "caddy", 
+      "provider": "github",
+      "path": "caddyserver/caddy",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "traefik", 
+      "name": "traefik", 
+      "provider": "github",
+      "path": "traefik/traefik",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "nginx", 
+      "name": "nginx", 
+      "provider": "github",
+      "path": "nginx/nginx",
+      "format": ".tar.gz",
+      "releaseRegex": "release-"
+    },
+    {
+      "id": "stripe", 
+      "name": "stripe", 
+      "provider": "github",
+      "path": "stripe/stripe-cli",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "goreleaser", 
+      "name": "goreleaser", 
+      "provider": "github",
+      "path": "goreleaser/goreleaser",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "opentofu", 
+      "name": "tofu", 
+      "provider": "github",
+      "path": "opentofu/opentofu",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "podman", 
+      "name": "podman", 
+      "provider": "github",
+      "path": "podman-container-tools/podman",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "bitwarden", 
+      "name": "bw", 
+      "provider": "github",
+      "path": "bitwarden/clients",
+      "format": ".zip",
+      "releaseRegex": "cli-"
+    },
+    {
+      "id": "mkcert", 
+      "name": "mkcert", 
+      "provider": "github",
+      "path": "filosottile/mkcert",
+      "format": ".zip"
+    },
+    {
+      "id": "supabase", 
+      "name": "supabase", 
+      "provider": "github",
+      "path": "supabase/cli",
       "format": ".tar.gz"
     }
   ]
