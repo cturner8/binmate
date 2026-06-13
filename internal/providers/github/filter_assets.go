@@ -104,6 +104,14 @@ func filterByOS(assets []ReleaseAsset, os string) []ReleaseAsset {
 				if pattern == "win" && strings.Contains(nameLower, "darwin") {
 					continue
 				}
+				// edge case to prevent "linux" matching Android targets
+				// (e.g. aarch64-linux-android / -androideabi). Android shares
+				// the Linux kernel but is a distinct platform whose binaries
+				// are built against Bionic libc and will not run on a normal
+				// glibc/musl Linux system.
+				if pattern == "linux" && strings.Contains(nameLower, "android") {
+					continue
+				}
 				filtered = append(filtered, asset)
 				break
 			}

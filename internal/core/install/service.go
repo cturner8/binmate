@@ -38,6 +38,8 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 		return nil, fmt.Errorf("fetch failed: %w", err)
 	}
 
+	log.Printf("Fetched asset %s from release %s", asset.Name, release.TagName)
+
 	// Download the asset
 	downloadPath, err := github.DownloadAsset(binaryConfig.ProviderPath, asset.Id, asset.Name, binaryConfig.Authenticated)
 	if err != nil {
@@ -95,6 +97,8 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 	if err != nil {
 		return nil, fmt.Errorf("extraction failed: %w", err)
 	}
+
+	log.Printf("Extracted %s to %s", downloadPath, destPath)
 
 	// Compute checksum of extracted binary
 	binaryChecksum, err := crypto.ComputeSHA256(destPath)

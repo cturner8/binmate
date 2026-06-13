@@ -96,6 +96,8 @@ func FetchReleaseAsset(binary *database.Binary, version string) (Release, Releas
 		return Release{}, ReleaseAsset{}, fmt.Errorf("failed to find requested binary, no release assets")
 	}
 
+	log.Printf("Received release assets: %v", release.Assets)
+
 	// Create filter based on binary config
 	filter := NewAssetFilter()
 	filter.Extension = binary.Format // e.g., ".tar.gz", ".zip"
@@ -109,11 +111,15 @@ func FetchReleaseAsset(binary *database.Binary, version string) (Release, Releas
 		return Release{}, ReleaseAsset{}, fmt.Errorf("no matching assets found: %w", err)
 	}
 
+	log.Printf("Filtered assets: %v", filteredAssets)
+
 	// Select the best asset from filtered results
 	selectedAsset, err := SelectBestAsset(filteredAssets)
 	if err != nil {
 		return Release{}, ReleaseAsset{}, fmt.Errorf("failed to select asset: %w", err)
 	}
+
+	log.Printf("Selected asset: %v", selectedAsset)
 
 	return release, selectedAsset, nil
 }
