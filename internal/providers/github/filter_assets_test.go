@@ -117,9 +117,12 @@ func TestFilterByOS(t *testing.T) {
 	assets := []ReleaseAsset{
 		{Id: 1, Name: "app-linux-amd64"},
 		{Id: 2, Name: "app-Linux-amd64"},
+		{Id: 7, Name: "app-linux-android-amd64"},
+		{Id: 6, Name: "app-linux-androideabi-amd64"},
 		{Id: 3, Name: "app-darwin-arm64"},
 		{Id: 4, Name: "app-macOS-arm64"},
 		{Id: 5, Name: "app-windows-amd64.exe"},
+		{Id: 8, Name: "app-windows-arm64.exe"},
 	}
 
 	tests := []struct {
@@ -129,7 +132,7 @@ func TestFilterByOS(t *testing.T) {
 	}{
 		{"linux variations", "linux", 2},
 		{"darwin/macOS variations", "darwin", 2},
-		{"windows variations", "windows", 1},
+		{"windows variations", "windows", 2},
 	}
 
 	for _, tt := range tests {
