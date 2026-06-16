@@ -89,14 +89,14 @@ release:
     
     Use the install script:
     ```bash
-    curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | bash
+    curl -fsSL https://binmate.cturner8.dev/install.sh | bash
     ```
     
     ### Windows (PowerShell)
     
     Use the PowerShell install script:
     ```powershell
-    irm https://raw.githubusercontent.com/cturner8/binmate/main/install.ps1 | iex
+    irm https://binmate.cturner8.dev/install.ps1 | iex
     ```
     
     ### Manual Installation

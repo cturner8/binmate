@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/cturner8/binmate/dev/schema.json",
+  "$schema": "./static/schema.json",
   "version": 1,
   "global": {
     "installPath": "/usr/local/bin",

@@ -93,6 +93,10 @@
         },
         "releaseRegex": {
           "type": "string",
+          "description": "Optional regex pattern to filter release tags"
+        },
+        "assetRegex": {
+          "type": "string",
           "description": "Optional regex pattern to filter release assets"
         },
         "installPath": {

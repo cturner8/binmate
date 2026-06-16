@@ -3,7 +3,7 @@
 # binmate installer
 # 
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/cturner8/binmate/main/install.sh | bash
+#   curl -fsSL https://binmate.cturner8.dev/install.sh | bash
 #
 # Environment variables:
 #   BINMATE_VERSION     - Specific version to install (e.g., "v1.0.0" or "latest", default: "latest")
