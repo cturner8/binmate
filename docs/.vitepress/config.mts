@@ -8,6 +8,7 @@ export default defineConfig({
   srcDir: './src',
   cleanUrls: true,
   lastUpdated: true,
+  
 
   head: [
     ['meta', { name: 'theme-color', content: '#F97316' }],
@@ -25,6 +26,7 @@ export default defineConfig({
   vite: {
     server: {
       port: 31560,
+      host: '127.0.0.1'
     },
   },
 
