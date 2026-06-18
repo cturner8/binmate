@@ -5,7 +5,9 @@ on:
   push:
     branches: [main]
     paths:
-    - "static/**"
+      - "docs/src/**"
+      - "docs/.vitepress/**"
+      - "docs/bun.lock"
 
 permissions:
   contents: read
