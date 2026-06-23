@@ -94,7 +94,9 @@ func FetchReleaseAsset(client *http.Client, binary *database.Binary, version str
 
 	// Create filter based on binary config
 	filter := NewAssetFilter()
-	filter.Extension = binary.Format // e.g., ".tar.gz", ".zip"
+	if binary.Format != "raw" {
+		filter.Extension = binary.Format // e.g., ".tar.gz", ".zip"
+	}
 	if binary.AssetRegex != nil {
 		filter.AssetRegex = *binary.AssetRegex // custom regex if provided
 	}
