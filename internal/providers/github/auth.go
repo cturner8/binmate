@@ -99,7 +99,7 @@ func NewClientForBinary(binary *database.Binary) (*http.Client, error) {
 	}
 
 	if token == "" {
-		return nil, fmt.Errorf("authentication required for binary %q but no GitHub token found; set BINMATE_GITHUB_TOKEN or GITHUB_TOKEN", binary.Name)
+		return nil, fmt.Errorf("authentication required for binary %q but no GitHub token found; set an askpass script or static token in your environment", binary.Name)
 	}
 
 	return CreateHTTPClient(token)
