@@ -138,11 +138,6 @@ func TestViewStateString(t *testing.T) {
 			expected: "Import Binary",
 		},
 		{
-			name:     "downloads view",
-			state:    viewDownloads,
-			expected: "Downloads",
-		},
-		{
 			name:     "configuration view",
 			state:    viewConfiguration,
 			expected: "Configuration",

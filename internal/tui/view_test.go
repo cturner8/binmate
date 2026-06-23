@@ -276,7 +276,7 @@ func TestRenderVersions_WithInstallations(t *testing.T) {
 	m.selectedVersionIdx = 0
 	m.width = 80
 
-	// This will call getActiveVersion which may panic with nil dbService, 
+	// This will call getActiveVersion which may panic with nil dbService,
 	// but we test that the basic structure is there
 	defer func() {
 		if r := recover(); r != nil {
@@ -472,7 +472,6 @@ func TestRenderTabs_BinariesListView(t *testing.T) {
 
 	expectedStrings := []string{
 		"Binaries",
-		"Downloads",
 		"Config",
 		"Help",
 	}

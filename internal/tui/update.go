@@ -270,8 +270,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updateInstallBinary(msg)
 		case viewImportBinary:
 			return m.updateImportBinary(msg)
-		case viewDownloads:
-			return m.updatePlaceholderView(msg)
 		case viewConfiguration:
 			return m.updatePlaceholderView(msg)
 		case viewHelp:
