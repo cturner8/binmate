@@ -2,7 +2,7 @@
 
 ## Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+This project uses **bd** (beads) for issue tracking.
 
 ### Quick Reference
 
@@ -37,7 +37,7 @@ bd sync               # Sync with git
 **MANDATORY WORKFLOW:**
 
 1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
+2. **Run quality gates** (if code changed) - Tests, linters, builds, formatter
 3. **Update issue status** - Close finished work, update in-progress items
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
@@ -48,10 +48,15 @@ bd sync               # Sync with git
    ```
 5. **Clean up** - Clear stashes, prune remote branches
 6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+7. **Hand off** 
+  - Provide context for next session
+  - Provide user with a GitHub PR link to start the PR process
 
 **CRITICAL RULES:**
 
+- Always use edit file tool for creating new files or updating existing files
+- When updating tasks with implementation plans, use the `--body-file` bd argument to apply the complete `plan.md` content
+- Use the GitHub MCP tools for GitHub related operations rather than using direct `fetch` requests
 - Work is NOT complete until `git push` succeeds
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
@@ -173,6 +178,7 @@ bd sync               # Sync with git
 - Keep packages focused and single-purpose
 - Prefer small, composable functions
 - Use meaningful variable and function names
+- When changing or adding new `go` files, run `go fmt` on changes files
 
 ### Configuration Schema
 

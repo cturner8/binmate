@@ -2,14 +2,21 @@ package tui
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 
+	binarySvc "cturner8/binmate/internal/core/binary"
+	configPkg "cturner8/binmate/internal/core/config"
 	"cturner8/binmate/internal/core/crypto"
+	installSvc "cturner8/binmate/internal/core/install"
 	urlparser "cturner8/binmate/internal/core/url"
+	versionSvc "cturner8/binmate/internal/core/version"
 	"cturner8/binmate/internal/database"
 	"cturner8/binmate/internal/database/repository"
+	"cturner8/binmate/internal/providers/github"
 )
 
 const (
@@ -53,8 +60,199 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.parsedBinary = nil
 			m.formInputs = []textinput.Model{}
 			m.errorMessage = ""
+			m.successMessage = fmt.Sprintf("Binary %s added successfully", msg.binary.Name)
 			m.loading = true
 			return m, loadBinaries(m.dbService)
+		}
+		return m, nil
+
+	case binaryInstalledMsg:
+		m.installingInProgress = false
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			// Return to the view we came from (binaries list or versions)
+			returnView := m.installReturnView
+			if returnView == viewState(0) {
+				returnView = viewBinariesList // Default to binaries list
+			}
+			m.currentView = returnView
+			m.installVersionInput.Reset()
+			m.installBinaryID = ""
+			m.errorMessage = ""
+			m.successMessage = fmt.Sprintf("Successfully installed %s version %s", msg.binary.Name, msg.installation.Version)
+
+			// Reload appropriate data based on return view
+			m.loading = true
+			if returnView == viewVersions && m.selectedBinary != nil {
+				return m, loadVersions(m.dbService, m.selectedBinary.ID)
+			}
+			return m, loadBinaries(m.dbService)
+		}
+		return m, nil
+
+	case binaryUpdatedMsg:
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.errorMessage = ""
+			if msg.oldVersion == msg.newVersion {
+				m.successMessage = fmt.Sprintf("%s is already up to date (%s)", msg.binaryID, msg.newVersion)
+			} else {
+				m.successMessage = fmt.Sprintf("Updated %s from %s to %s", msg.binaryID, msg.oldVersion, msg.newVersion)
+			}
+			// Reload appropriate data based on current view
+			m.loading = true
+			if m.currentView == viewVersions && m.selectedBinary != nil {
+				return m, loadVersions(m.dbService, m.selectedBinary.ID)
+			}
+			return m, loadBinaries(m.dbService)
+		}
+		return m, nil
+
+	case binaryRemovedMsg:
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.errorMessage = ""
+			m.successMessage = fmt.Sprintf("Binary %s removed successfully", msg.binaryID)
+			// Reload binaries list
+			m.loading = true
+			return m, loadBinaries(m.dbService)
+		}
+		return m, nil
+
+	case binaryImportedMsg:
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.errorMessage = ""
+			m.successMessage = fmt.Sprintf("Binary %s imported successfully", msg.binary.UserID)
+			// Reset form and return to binaries list
+			m.importPathInput.Reset()
+			m.importNameInput.Reset()
+			m.importURLInput.Reset()
+			m.importVersionInput.Reset()
+			m.importFocusIdx = 0
+			m.currentView = viewBinariesList
+			m.loading = true
+			return m, loadBinaries(m.dbService)
+		}
+		return m, nil
+
+	case updateCheckMsg:
+		m.loading = false
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.errorMessage = ""
+			if msg.hasUpdate {
+				m.successMessage = fmt.Sprintf("⬆ Update available for %s: %s → %s", msg.binaryID, msg.currentVersion, msg.latestVersion)
+			} else if msg.latestInstalled {
+				m.successMessage = fmt.Sprintf("✓ %s: latest version (%s) installed but not active (current: %s)", msg.binaryID, msg.latestVersion, msg.currentVersion)
+			} else {
+				m.successMessage = fmt.Sprintf("✓ %s is up to date (%s)", msg.binaryID, msg.currentVersion)
+			}
+		}
+		return m, nil
+
+	case configSyncedMsg:
+		m.loading = false
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.errorMessage = ""
+			m.successMessage = "Configuration synced to database successfully"
+			// Reload binaries list
+			return m, loadBinaries(m.dbService)
+		}
+		return m, nil
+
+	case versionSwitchedMsg:
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.errorMessage = ""
+			m.successMessage = fmt.Sprintf("Switched to version %s", msg.installation.Version)
+			// Reload versions to update active indicator
+			m.loading = true
+			return m, loadVersions(m.dbService, m.selectedBinary.ID)
+		}
+		return m, nil
+
+	case versionDeletedMsg:
+		if msg.err != nil {
+			m.errorMessage = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.errorMessage = ""
+			m.successMessage = "Version deleted successfully"
+			// Reload versions list
+			m.loading = true
+			return m, loadVersions(m.dbService, m.selectedBinary.ID)
+		}
+		return m, nil
+
+	case successMsg:
+		m.successMessage = msg.message
+		m.errorMessage = ""
+		return m, nil
+
+	case errorMsg:
+		m.errorMessage = msg.err.Error()
+		m.successMessage = ""
+		return m, nil
+
+	case githubTokenResolvedMsg:
+		m.githubTokenResolved = true
+		if msg.err == nil {
+			m.resolvedGithubToken = msg.token
+		}
+		// Token resolution errors are silent; per-call resolution will surface them when needed.
+		return m, nil
+
+	case githubRepoInfoMsg:
+		m.githubLoading = false
+		if msg.err != nil {
+			m.githubError = msg.err.Error()
+		} else {
+			m.githubRepoInfo = msg.info
+		}
+		return m, nil
+
+	case githubAvailableVersionsMsg:
+		m.githubLoading = false
+		if msg.err != nil {
+			m.githubError = msg.err.Error()
+		} else {
+			m.githubAvailableVers = msg.versions
+			m.selectedAvailableVersionIdx = 0
+		}
+		return m, nil
+
+	case githubReleaseNotesMsg:
+		m.githubLoading = false
+		if msg.err != nil {
+			m.githubError = msg.err.Error()
+		} else {
+			m.githubReleaseInfo = msg.release
+		}
+		return m, nil
+
+	case githubRepoStarredMsg:
+		if msg.err != nil {
+			m.githubError = msg.err.Error()
+			m.successMessage = ""
+		} else {
+			m.githubError = ""
+			m.successMessage = "Repository starred successfully"
 		}
 		return m, nil
 
@@ -68,12 +266,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updateAddBinaryURL(msg)
 		case viewAddBinaryForm:
 			return m.updateAddBinaryForm(msg)
+		case viewInstallBinary:
+			return m.updateInstallBinary(msg)
+		case viewImportBinary:
+			return m.updateImportBinary(msg)
 		case viewDownloads:
 			return m.updatePlaceholderView(msg)
 		case viewConfiguration:
 			return m.updatePlaceholderView(msg)
 		case viewHelp:
 			return m.updatePlaceholderView(msg)
+		case viewReleaseNotes, viewAvailableVersions, viewRepositoryInfo:
+			return m.updateGitHubView(msg)
 		}
 
 		// Global key handlers
@@ -88,6 +292,172 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // updateBinariesList handles updates for the binaries list view
 func (m model) updateBinariesList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// Handle remove confirmation if active
+	if m.confirmingRemove {
+		switch msg.String() {
+		case "y":
+			// Remove without files
+			// Check if bulk mode and multiple selections
+			if m.bulkSelectMode && len(m.selectedBinaries) > 0 {
+				binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+				var cmds []tea.Cmd
+				for idx := range m.selectedBinaries {
+					if idx < len(binariesToShow) {
+						binaryID := binariesToShow[idx].Binary.UserID
+						cmds = append(cmds, removeBinary(m.dbService, binaryID, false))
+					}
+				}
+				m.confirmingRemove = false
+				m.removeBinaryID = ""
+				m.selectedBinaries = make(map[int]bool)
+				m.bulkSelectMode = false
+				if len(cmds) > 0 {
+					return m, tea.Batch(cmds...)
+				}
+				return m, nil
+			} else {
+				// Single remove
+				binaryID := m.removeBinaryID
+				m.confirmingRemove = false
+				m.removeBinaryID = ""
+				return m, removeBinary(m.dbService, binaryID, false)
+			}
+		case "Y":
+			// Remove with files
+			// Check if bulk mode and multiple selections
+			if m.bulkSelectMode && len(m.selectedBinaries) > 0 {
+				binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+				var cmds []tea.Cmd
+				for idx := range m.selectedBinaries {
+					if idx < len(binariesToShow) {
+						binaryID := binariesToShow[idx].Binary.UserID
+						cmds = append(cmds, removeBinary(m.dbService, binaryID, true))
+					}
+				}
+				m.confirmingRemove = false
+				m.removeBinaryID = ""
+				m.selectedBinaries = make(map[int]bool)
+				m.bulkSelectMode = false
+				if len(cmds) > 0 {
+					return m, tea.Batch(cmds...)
+				}
+				return m, nil
+			} else {
+				// Single remove
+				binaryID := m.removeBinaryID
+				m.confirmingRemove = false
+				m.removeBinaryID = ""
+				return m, removeBinary(m.dbService, binaryID, true)
+			}
+		case "n", keyEsc:
+			// Cancel
+			m.confirmingRemove = false
+			m.removeBinaryID = ""
+			return m, nil
+		}
+		return m, nil
+	}
+
+	// Handle filter panel if open
+	if m.filterPanelOpen {
+		switch msg.String() {
+		case "1":
+			// Toggle provider filter (github only for now)
+			if _, ok := m.activeFilters["provider"]; ok {
+				delete(m.activeFilters, "provider")
+			} else {
+				m.activeFilters["provider"] = "github"
+			}
+			// Clear selections when filters change
+			if m.bulkSelectMode {
+				m.selectedBinaries = make(map[int]bool)
+			}
+			return m, nil
+		case "2":
+			// Cycle format filter (.tar.gz -> .zip -> none)
+			if format, ok := m.activeFilters["format"]; ok {
+				if format == ".tar.gz" {
+					m.activeFilters["format"] = ".zip"
+				} else {
+					delete(m.activeFilters, "format")
+				}
+			} else {
+				m.activeFilters["format"] = ".tar.gz"
+			}
+			// Clear selections when filters change
+			if m.bulkSelectMode {
+				m.selectedBinaries = make(map[int]bool)
+			}
+			return m, nil
+		case "3":
+			// Cycle status filter (installed -> not-installed -> none)
+			if status, ok := m.activeFilters["status"]; ok {
+				if status == "installed" {
+					m.activeFilters["status"] = "not-installed"
+				} else {
+					delete(m.activeFilters, "status")
+				}
+			} else {
+				m.activeFilters["status"] = "installed"
+			}
+			// Clear selections when filters change
+			if m.bulkSelectMode {
+				m.selectedBinaries = make(map[int]bool)
+			}
+			return m, nil
+		case "c":
+			// Clear all filters
+			m.activeFilters = make(map[string]string)
+			// Clear selections when filters change
+			if m.bulkSelectMode {
+				m.selectedBinaries = make(map[int]bool)
+			}
+			m.successMessage = "All filters cleared"
+			return m, nil
+		case keyEsc:
+			// Close filter panel
+			m.filterPanelOpen = false
+			return m, nil
+		}
+		return m, nil
+	}
+
+	// Handle search mode - only process text input when actively typing
+	if m.searchMode {
+		switch msg.String() {
+		case keyEsc:
+			// Exit search mode
+			m.searchMode = false
+			m.searchTextInput.Reset()
+			m.searchTextInput.Blur()
+			m.searchQuery = ""
+			m.filteredBinaries = []BinaryWithMetadata{}
+			m.selectedIndex = 0
+			// Clear selections when search changes
+			if m.bulkSelectMode {
+				m.selectedBinaries = make(map[int]bool)
+			}
+			return m, nil
+		case keyEnter:
+			// Apply search and exit input mode (but keep filtered view)
+			m.searchQuery = m.searchTextInput.Value()
+			m.searchTextInput.Blur()
+			m.searchMode = false // Exit search mode to allow normal navigation
+			m.filteredBinaries = filterBinaries(m.binaries, m.searchQuery)
+			m.selectedIndex = 0
+			// Clear selections when search changes
+			if m.bulkSelectMode {
+				m.selectedBinaries = make(map[int]bool)
+			}
+			return m, nil
+		default:
+			// Update search input
+			var cmd tea.Cmd
+			m.searchTextInput, cmd = m.searchTextInput.Update(msg)
+			return m, cmd
+		}
+	}
+
 	// Check for tab switching
 	if view, ok := getTabForKey(msg.String()); ok {
 		m.currentView = view
@@ -99,22 +469,48 @@ func (m model) updateBinariesList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return updatedModel, nil
 	}
 
+	// Handle bulk selection toggle with space key BEFORE the main switch
+	// This prevents space from falling through to other handlers
+	// Check both msg.String() and the actual rune to be absolutely sure
+	keyStr := msg.String()
+	if keyStr == keySpace || keyStr == " " {
+		if m.bulkSelectMode {
+			binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+			if len(binariesToShow) > 0 && m.selectedIndex < len(binariesToShow) {
+				// Toggle selection
+				if m.selectedBinaries[m.selectedIndex] {
+					delete(m.selectedBinaries, m.selectedIndex)
+				} else {
+					m.selectedBinaries[m.selectedIndex] = true
+				}
+			}
+			return m, nil
+		}
+		// If not in bulk mode, space does nothing (prevents accidental actions)
+		return m, nil
+	}
+
 	switch msg.String() {
 	case keyUp:
-		if m.selectedIndex > 0 {
+		// Navigate display list
+		binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+		if m.selectedIndex > 0 && len(binariesToShow) > 0 {
 			m.selectedIndex--
 		}
 
 	case keyDown:
-		if m.selectedIndex < len(m.binaries)-1 {
+		// Navigate display list
+		binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+		if len(binariesToShow) > 0 && m.selectedIndex < len(binariesToShow)-1 {
 			m.selectedIndex++
 		}
 
 	case keyEnter:
-		// Transition to versions view
-		if len(m.binaries) > 0 && m.selectedIndex < len(m.binaries) {
+		// Transition to versions view using display list
+		binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+		if len(binariesToShow) > 0 && m.selectedIndex < len(binariesToShow) {
 			m.currentView = viewVersions
-			m.selectedBinary = m.binaries[m.selectedIndex].Binary
+			m.selectedBinary = binariesToShow[m.selectedIndex].Binary
 			m.loading = true
 			return m, loadVersions(m.dbService, m.selectedBinary.ID)
 		}
@@ -125,6 +521,138 @@ func (m model) updateBinariesList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.urlTextInput.Reset()
 		m.urlTextInput.Focus()
 		m.errorMessage = ""
+		m.successMessage = ""
+
+	case keyInstall:
+		// Transition to install binary view
+		binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+		if len(binariesToShow) > 0 && m.selectedIndex < len(binariesToShow) {
+			m.currentView = viewInstallBinary
+			m.installBinaryID = binariesToShow[m.selectedIndex].Binary.UserID
+			m.installReturnView = viewBinariesList
+			m.installVersionInput.Focus()
+			m.errorMessage = ""
+			m.successMessage = ""
+		}
+
+	case keyUpdate:
+		// Update selected binary(ies) to latest version
+		binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+
+		// If in bulk mode and items are selected, update all selected
+		if m.bulkSelectMode && len(m.selectedBinaries) > 0 {
+			var selectedBinariesList []BinaryWithMetadata
+			for idx := range m.selectedBinaries {
+				if idx < len(binariesToShow) {
+					selectedBinariesList = append(selectedBinariesList, binariesToShow[idx])
+				}
+			}
+			if len(selectedBinariesList) > 0 {
+				m.errorMessage = ""
+				m.successMessage = ""
+				m.loading = true
+				return m, updateAllBinaries(m.dbService, selectedBinariesList)
+			}
+		} else if len(binariesToShow) > 0 && m.selectedIndex < len(binariesToShow) {
+			// Single update
+			selectedBinary := binariesToShow[m.selectedIndex]
+			m.errorMessage = ""
+			m.successMessage = ""
+			return m, updateBinary(m.dbService, selectedBinary.Binary.UserID)
+		}
+
+	case keyUpdateAll:
+		// Update all binaries to latest version
+		if len(m.binaries) > 0 {
+			m.errorMessage = ""
+			m.successMessage = ""
+			m.loading = true
+			return m, updateAllBinaries(m.dbService, m.binaries)
+		}
+
+	case keyRemove:
+		// Show remove confirmation for selected binary(ies)
+		binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+
+		// If in bulk mode and items are selected, prepare to remove all selected
+		if m.bulkSelectMode && len(m.selectedBinaries) > 0 {
+			// For bulk remove, track the count separately
+			m.confirmingRemove = true
+			m.bulkRemoveCount = len(m.selectedBinaries)
+			m.removeBinaryID = "" // Clear single binary ID for bulk operations
+			m.errorMessage = ""
+			m.successMessage = ""
+		} else if len(binariesToShow) > 0 && m.selectedIndex < len(binariesToShow) {
+			// Single remove
+			m.confirmingRemove = true
+			m.removeBinaryID = binariesToShow[m.selectedIndex].Binary.UserID
+			m.bulkRemoveCount = 0 // Clear bulk count for single operations
+			m.errorMessage = ""
+			m.successMessage = ""
+		}
+
+	case keyCheck:
+		// Check for updates for selected binary
+		binariesToShow := getDisplayBinaries(m.binaries, m.activeFilters, m.searchQuery, m.sortMode, m.sortAscending)
+		if len(binariesToShow) > 0 && m.selectedIndex < len(binariesToShow) {
+			selectedBinary := binariesToShow[m.selectedIndex]
+			m.errorMessage = ""
+			m.successMessage = ""
+			m.loading = true
+			return m, checkForUpdates(m.dbService, selectedBinary.Binary.UserID)
+		}
+
+	case keyImport:
+		// Transition to import binary view
+		m.currentView = viewImportBinary
+		m.importPathInput.Reset()
+		m.importNameInput.Reset()
+		m.importFocusIdx = 0
+		m.importPathInput.Focus()
+		m.errorMessage = ""
+		m.successMessage = ""
+
+	case keySearch:
+		// Enter search mode
+		m.searchMode = true
+		// Preserve current search value if one exists
+		if m.searchQuery != "" {
+			m.searchTextInput.SetValue(m.searchQuery)
+		} else {
+			m.searchTextInput.Reset()
+		}
+		m.searchTextInput.Focus()
+		m.errorMessage = ""
+		m.successMessage = ""
+
+	case keyFilter:
+		// Toggle filter panel
+		m.filterPanelOpen = !m.filterPanelOpen
+
+	case keyNextSort:
+		// Cycle through sort modes
+		switch m.sortMode {
+		case "name":
+			m.sortMode = "provider"
+		case "provider":
+			m.sortMode = "count"
+		case "count":
+			m.sortMode = "updated"
+		case "updated":
+			m.sortMode = "name"
+		default:
+			m.sortMode = "name"
+		}
+		m.successMessage = fmt.Sprintf("Sort by: %s", m.sortMode)
+
+	case keySortOrder:
+		// Toggle sort order
+		m.sortAscending = !m.sortAscending
+		direction := "ascending"
+		if !m.sortAscending {
+			direction = "descending"
+		}
+		m.successMessage = fmt.Sprintf("Sort order: %s", direction)
 
 	case keyQuit, keyCtrlC:
 		return m, tea.Quit
@@ -136,12 +664,123 @@ func (m model) updateBinariesList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 // updateVersions handles updates for the versions view
 func (m model) updateVersions(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
+	case keyUp:
+		if m.selectedVersionIdx > 0 {
+			m.selectedVersionIdx--
+		}
+
+	case keyDown:
+		if m.selectedVersionIdx < len(m.installations)-1 {
+			m.selectedVersionIdx++
+		}
+
+	case keySwitch, keyEnter:
+		// Switch to selected version
+		if len(m.installations) > 0 && m.selectedVersionIdx < len(m.installations) {
+			selectedInstallation := m.installations[m.selectedVersionIdx]
+			return m, switchVersion(m.dbService, m.selectedBinary, selectedInstallation)
+		}
+
+	case keyInstall:
+		// Install a new version
+		if m.selectedBinary != nil {
+			m.currentView = viewInstallBinary
+			m.installBinaryID = m.selectedBinary.UserID
+			m.installReturnView = viewVersions
+			m.installVersionInput.Focus()
+			m.errorMessage = ""
+			m.successMessage = ""
+		}
+
+	case keyUpdate:
+		// Update to latest version
+		if m.selectedBinary != nil {
+			m.errorMessage = ""
+			m.successMessage = ""
+			return m, updateBinary(m.dbService, m.selectedBinary.UserID)
+		}
+
+	case keyCheck:
+		// Check for updates
+		if m.selectedBinary != nil {
+			m.errorMessage = ""
+			m.successMessage = ""
+			m.loading = true
+			return m, checkForUpdates(m.dbService, m.selectedBinary.UserID)
+		}
+
+	case keyDelete, keyDelete2:
+		// Delete selected version
+		if len(m.installations) > 0 && m.selectedVersionIdx < len(m.installations) {
+			selectedInstallation := m.installations[m.selectedVersionIdx]
+
+			// Check if this is the active version
+			activeVersion, _ := getActiveVersion(m.dbService, m.selectedBinary.ID)
+			if activeVersion != nil && activeVersion.ID == selectedInstallation.ID {
+				m.errorMessage = "Cannot delete active version. Switch to another version first."
+				m.successMessage = ""
+				return m, nil
+			}
+
+			return m, deleteVersion(m.dbService, selectedInstallation)
+		}
+
+	case keyReleaseNotes:
+		// View release notes for selected version
+		if m.selectedBinary != nil && m.selectedBinary.Provider == "github" {
+			// Get the active version or selected version
+			version := "latest"
+			if len(m.installations) > 0 && m.selectedVersionIdx < len(m.installations) {
+				version = m.installations[m.selectedVersionIdx].Version
+			}
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
+			m.currentView = viewReleaseNotes
+			m.githubLoading = true
+			m.githubError = ""
+			return m, fetchReleaseNotes(client, m.selectedBinary, version, getDateFormat(m.config))
+		}
+
+	case keyRepoInfo:
+		// View GitHub repository information
+		if m.selectedBinary != nil && m.selectedBinary.Provider == "github" {
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
+			m.currentView = viewRepositoryInfo
+			m.githubLoading = true
+			m.githubError = ""
+			return m, fetchRepositoryInfo(client, m.selectedBinary)
+		}
+
+	case keyAvailVersions:
+		// View available versions from GitHub
+		if m.selectedBinary != nil && m.selectedBinary.Provider == "github" {
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
+			m.currentView = viewAvailableVersions
+			m.selectedAvailableVersionIdx = 0
+			m.githubLoading = true
+			m.githubError = ""
+			return m, fetchAvailableVersions(client, m.selectedBinary, getDateFormat(m.config))
+		}
+
 	case keyEsc:
 		// Return to binaries list
 		m.currentView = viewBinariesList
 		m.selectedBinary = nil
 		m.installations = nil
+		m.selectedVersionIdx = 0
 		m.errorMessage = ""
+		m.successMessage = ""
 
 	case keyQuit, keyCtrlC:
 		return m, tea.Quit
@@ -254,7 +893,7 @@ func loadVersions(dbService *repository.Service, binaryID int64) tea.Cmd {
 
 // createFormInputs creates text input fields for the binary form
 func createFormInputs(parsed *parsedBinaryConfig) []textinput.Model {
-	inputs := make([]textinput.Model, 8)
+	inputs := make([]textinput.Model, 9)
 
 	// User ID
 	inputs[0] = textinput.New()
@@ -310,6 +949,17 @@ func createFormInputs(parsed *parsedBinaryConfig) []textinput.Model {
 	inputs[7].CharLimit = 256
 	inputs[7].Width = 40
 
+	// Authenticated (boolean as string)
+	inputs[8] = textinput.New()
+	inputs[8].Placeholder = "true/false (default: false)"
+	if parsed.authenticated {
+		inputs[8].SetValue("true")
+	} else {
+		inputs[8].SetValue("false")
+	}
+	inputs[8].CharLimit = 5
+	inputs[8].Width = 40
+
 	return inputs
 }
 
@@ -329,6 +979,7 @@ func saveBinary(m model) tea.Cmd {
 		installPath := m.formInputs[5].Value()
 		assetRegex := m.formInputs[6].Value()
 		releaseRegex := m.formInputs[7].Value()
+		authenticatedStr := m.formInputs[8].Value()
 
 		// Validate required fields
 		if userID == "" {
@@ -345,6 +996,13 @@ func saveBinary(m model) tea.Cmd {
 		}
 		if format == "" {
 			return binarySavedMsg{err: fmt.Errorf("format is required")}
+		}
+
+		// Parse authenticated boolean
+		authenticated := false
+		if authenticatedStr != "" {
+			authenticatedStr = strings.ToLower(strings.TrimSpace(authenticatedStr))
+			authenticated = authenticatedStr == "true" || authenticatedStr == "yes" || authenticatedStr == "1"
 		}
 
 		// Check if binary already exists
@@ -371,6 +1029,7 @@ func saveBinary(m model) tea.Cmd {
 			Format:        format,
 			ConfigDigest:  configDigest,
 			ConfigVersion: ConfigVersionManual, // Not from config file
+			Authenticated: authenticated,
 		}
 
 		// Set optional fields
@@ -395,6 +1054,18 @@ func saveBinary(m model) tea.Cmd {
 
 // updatePlaceholderView handles updates for placeholder views (Downloads, Configuration, Help)
 func (m model) updatePlaceholderView(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// Configuration view: handle sync action
+	if m.currentView == viewConfiguration {
+		switch msg.String() {
+		case keySync:
+			// Trigger sync
+			m.errorMessage = ""
+			m.successMessage = ""
+			m.loading = true
+			return m, syncConfig(m.dbService, m.config)
+		}
+	}
+
 	// Check for tab switching
 	if view, ok := getTabForKey(msg.String()); ok {
 		m.currentView = view
@@ -412,4 +1083,591 @@ func (m model) updatePlaceholderView(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+// switchVersion switches the active version of a binary
+func switchVersion(dbService *repository.Service, binary *database.Binary, installation *database.Installation) tea.Cmd {
+	return func() tea.Msg {
+		// Handle optional InstallPath
+		customInstallPath := ""
+		if binary.InstallPath != nil {
+			customInstallPath = *binary.InstallPath
+		}
+
+		// Update the symlink
+		symlinkPath, err := versionSvc.SetActiveVersion(installation.InstalledPath, customInstallPath, binary.Name, binary.Alias)
+		if err != nil {
+			return versionSwitchedMsg{err: fmt.Errorf("failed to set active version: %w", err)}
+		}
+
+		// Update the versions table
+		if err := dbService.Versions.Set(binary.ID, installation.ID, symlinkPath); err != nil {
+			return versionSwitchedMsg{err: fmt.Errorf("failed to update version record: %w", err)}
+		}
+
+		return versionSwitchedMsg{installation: installation, err: nil}
+	}
+}
+
+// deleteVersion deletes an installation
+func deleteVersion(dbService *repository.Service, installation *database.Installation) tea.Cmd {
+	return func() tea.Msg {
+		// Delete from database
+		if err := dbService.Installations.Delete(installation.ID); err != nil {
+			return versionDeletedMsg{err: fmt.Errorf("failed to delete version: %w", err)}
+		}
+
+		// Optionally delete files (for now we'll leave the files)
+		// In a future enhancement, we can add a confirmation dialog
+
+		return versionDeletedMsg{installationID: installation.ID, err: nil}
+	}
+}
+
+// updateInstallBinary handles updates for the install binary view
+func (m model) updateInstallBinary(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// Don't process keys if installing
+	if m.installingInProgress {
+		switch msg.String() {
+		case keyQuit, keyCtrlC:
+			return m, tea.Quit
+		}
+		return m, nil
+	}
+
+	switch msg.String() {
+	case keyEsc:
+		// Cancel and return to the view we came from
+		returnView := m.installReturnView
+		if returnView == viewState(0) {
+			returnView = viewBinariesList
+		}
+		m.currentView = returnView
+		m.installVersionInput.Reset()
+		m.installBinaryID = ""
+		m.errorMessage = ""
+		m.successMessage = ""
+		return m, nil
+
+	case keyEnter:
+		// Start installation
+		version := m.installVersionInput.Value()
+		if version == "" {
+			version = "latest"
+		}
+
+		m.installingInProgress = true
+		m.errorMessage = ""
+		m.successMessage = ""
+		return m, installBinary(m.dbService, m.installBinaryID, version)
+
+	case keyQuit, keyCtrlC:
+		return m, tea.Quit
+	}
+
+	// Handle text input
+	var cmd tea.Cmd
+	m.installVersionInput, cmd = m.installVersionInput.Update(msg)
+	return m, cmd
+}
+
+// installBinary installs a binary version
+func installBinary(dbService *repository.Service, binaryID string, version string) tea.Cmd {
+	return func() tea.Msg {
+		// Use the install service to install the binary
+		result, err := installSvc.InstallBinary(binaryID, version, dbService)
+		if err != nil {
+			return binaryInstalledMsg{err: fmt.Errorf("failed to install binary: %w", err)}
+		}
+
+		return binaryInstalledMsg{
+			binary:       result.Binary,
+			installation: result.Installation,
+			err:          nil,
+		}
+	}
+}
+
+// updateBinary updates a binary to the latest version
+func updateBinary(dbService *repository.Service, binaryID string) tea.Cmd {
+	return func() tea.Msg {
+		// Get current active version if any
+		currentVersion := "none"
+		binary, err := dbService.Binaries.GetByUserID(binaryID)
+		if err == nil {
+			activeVer, err := dbService.Versions.Get(binary.ID)
+			if err == nil && activeVer != nil {
+				installation, err := dbService.Installations.GetByID(activeVer.InstallationID)
+				if err == nil {
+					currentVersion = installation.Version
+				}
+			}
+		}
+
+		// Use the install service to update to latest
+		result, err := installSvc.UpdateToLatest(binaryID, dbService)
+		if err != nil {
+			return binaryUpdatedMsg{
+				binaryID: binaryID,
+				err:      fmt.Errorf("failed to update binary: %w", err),
+			}
+		}
+
+		return binaryUpdatedMsg{
+			binaryID:   binaryID,
+			oldVersion: currentVersion,
+			newVersion: result.Version,
+			err:        nil,
+		}
+	}
+}
+
+// updateAllBinaries updates all binaries to their latest versions
+func updateAllBinaries(dbService *repository.Service, binaries []BinaryWithMetadata) tea.Cmd {
+	return func() tea.Msg {
+		updatedCount := 0
+		failedCount := 0
+
+		for _, b := range binaries {
+			_, err := installSvc.UpdateToLatest(b.Binary.UserID, dbService)
+			if err != nil {
+				failedCount++
+			} else {
+				updatedCount++
+			}
+		}
+
+		// Return a success message with the summary
+		return successMsg{
+			message: fmt.Sprintf("Updated %d binaries (%d failed)", updatedCount, failedCount),
+		}
+	}
+}
+
+// removeBinary removes a binary from the database and optionally from disk
+func removeBinary(dbService *repository.Service, binaryID string, removeFiles bool) tea.Cmd {
+	return func() tea.Msg {
+		// Use the binary service to remove the binary
+		err := binarySvc.RemoveBinary(binaryID, dbService, removeFiles)
+		if err != nil {
+			return binaryRemovedMsg{
+				binaryID: binaryID,
+				err:      fmt.Errorf("failed to remove binary: %w", err),
+			}
+		}
+
+		return binaryRemovedMsg{
+			binaryID: binaryID,
+			err:      nil,
+		}
+	}
+}
+
+// importBinary imports an existing binary from the file system
+func importBinary(dbService *repository.Service, path string, name string) tea.Cmd {
+	return importBinaryWithOptions(dbService, path, name, "", "")
+}
+
+// importBinaryWithOptions imports an existing binary with optional URL and version
+func importBinaryWithOptions(dbService *repository.Service, path string, name string, url string, version string) tea.Cmd {
+	return func() tea.Msg {
+		// Use the binary service to import the binary
+		binary, err := binarySvc.ImportBinaryWithOptions(path, name, url, version, false, false, dbService)
+		if err != nil {
+			return binaryImportedMsg{
+				err: fmt.Errorf("failed to import binary: %w", err),
+			}
+		}
+
+		return binaryImportedMsg{
+			binary: binary,
+			err:    nil,
+		}
+	}
+}
+
+// checkForUpdates checks if updates are available for a binary
+func checkForUpdates(dbService *repository.Service, binaryID string) tea.Cmd {
+	return func() tea.Msg {
+		// Get the binary configuration
+		binaryConfig, err := dbService.Binaries.GetByUserID(binaryID)
+		if err != nil {
+			return updateCheckMsg{
+				binaryID: binaryID,
+				err:      fmt.Errorf("binary not found: %w", err),
+			}
+		}
+
+		if binaryConfig.Provider != "github" {
+			return updateCheckMsg{
+				binaryID: binaryID,
+				err:      fmt.Errorf("only github provider is currently supported"),
+			}
+		}
+
+		// Create HTTP client for this binary (authenticated if required)
+		client, err := github.NewClientForBinary(binaryConfig)
+		if err != nil {
+			return updateCheckMsg{
+				binaryID: binaryID,
+				err:      fmt.Errorf("failed to create HTTP client: %w", err),
+			}
+		}
+
+		// Fetch latest release
+		release, _, err := github.FetchReleaseAsset(client, binaryConfig, "latest")
+		if err != nil {
+			return updateCheckMsg{
+				binaryID: binaryID,
+				err:      fmt.Errorf("failed to fetch latest release: %w", err),
+			}
+		}
+
+		latestVersion := release.TagName
+
+		// Get current active version
+		currentVersion := "none"
+		activeVersion, err := dbService.Versions.Get(binaryConfig.ID)
+		if err == nil && activeVersion != nil {
+			installation, err := dbService.Installations.GetByID(activeVersion.InstallationID)
+			if err == nil {
+				currentVersion = installation.Version
+			}
+		}
+
+		// Check if latest version is already installed (even if not active)
+		_, err = dbService.Installations.Get(binaryConfig.ID, latestVersion)
+		isLatestInstalled := err == nil
+
+		// Determine if update is needed: latest not installed, or current is not latest
+		hasUpdate := !isLatestInstalled && currentVersion != latestVersion && currentVersion != "none"
+
+		return updateCheckMsg{
+			binaryID:        binaryID,
+			currentVersion:  currentVersion,
+			latestVersion:   latestVersion,
+			hasUpdate:       hasUpdate,
+			latestInstalled: isLatestInstalled && currentVersion != latestVersion,
+			err:             nil,
+		}
+	}
+}
+
+// updateImportBinary handles updates for the import binary view
+func (m model) updateImportBinary(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case keyEsc:
+		// Cancel and return to binaries list
+		m.currentView = viewBinariesList
+		m.importPathInput.Reset()
+		m.importNameInput.Reset()
+		m.importURLInput.Reset()
+		m.importVersionInput.Reset()
+		m.importFocusIdx = 0
+		m.errorMessage = ""
+		m.successMessage = ""
+		return m, nil
+
+	case keyTab:
+		// Move to next field (0 -> 1 -> 2 -> 3 -> 0)
+		m.importPathInput.Blur()
+		m.importNameInput.Blur()
+		m.importURLInput.Blur()
+		m.importVersionInput.Blur()
+
+		m.importFocusIdx = (m.importFocusIdx + 1) % 4
+
+		switch m.importFocusIdx {
+		case 0:
+			m.importPathInput.Focus()
+		case 1:
+			m.importNameInput.Focus()
+		case 2:
+			m.importURLInput.Focus()
+		case 3:
+			m.importVersionInput.Focus()
+		}
+		return m, nil
+
+	case keyShiftTab:
+		// Move to previous field (3 -> 2 -> 1 -> 0 -> 3)
+		m.importPathInput.Blur()
+		m.importNameInput.Blur()
+		m.importURLInput.Blur()
+		m.importVersionInput.Blur()
+
+		m.importFocusIdx = (m.importFocusIdx - 1 + 4) % 4
+
+		switch m.importFocusIdx {
+		case 0:
+			m.importPathInput.Focus()
+		case 1:
+			m.importNameInput.Focus()
+		case 2:
+			m.importURLInput.Focus()
+		case 3:
+			m.importVersionInput.Focus()
+		}
+		return m, nil
+
+	case keyEnter:
+		// Attempt import
+		path := m.importPathInput.Value()
+		name := m.importNameInput.Value()
+		url := m.importURLInput.Value()
+		version := m.importVersionInput.Value()
+
+		if path == "" {
+			m.errorMessage = "Binary path is required"
+			m.successMessage = ""
+			return m, nil
+		}
+		if name == "" && url == "" {
+			m.errorMessage = "Either binary name or GitHub URL is required"
+			m.successMessage = ""
+			return m, nil
+		}
+
+		// Clear messages and trigger import
+		m.errorMessage = ""
+		m.successMessage = ""
+		return m, importBinaryWithOptions(m.dbService, path, name, url, version)
+
+	case keyQuit, keyCtrlC:
+		return m, tea.Quit
+	}
+
+	// Handle text input for focused field
+	var cmd tea.Cmd
+	switch m.importFocusIdx {
+	case 0:
+		m.importPathInput, cmd = m.importPathInput.Update(msg)
+	case 1:
+		m.importNameInput, cmd = m.importNameInput.Update(msg)
+	case 2:
+		m.importURLInput, cmd = m.importURLInput.Update(msg)
+	case 3:
+		m.importVersionInput, cmd = m.importVersionInput.Update(msg)
+	}
+	return m, cmd
+}
+
+// syncConfig syncs the configuration file to the database
+func syncConfig(dbService *repository.Service, cfg *configPkg.Config) tea.Cmd {
+	return func() tea.Msg {
+		err := configPkg.SyncToDatabase(*cfg, dbService)
+		if err != nil {
+			return configSyncedMsg{err: fmt.Errorf("failed to sync config: %w", err)}
+		}
+
+		return configSyncedMsg{err: nil}
+	}
+}
+
+// updateGitHubView handles updates for GitHub-related views
+func (m model) updateGitHubView(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case keyUp:
+		if m.currentView == viewAvailableVersions && m.selectedAvailableVersionIdx > 0 {
+			m.selectedAvailableVersionIdx--
+		}
+		return m, nil
+
+	case keyDown:
+		if m.currentView == viewAvailableVersions && m.selectedAvailableVersionIdx < len(m.githubAvailableVers)-1 {
+			m.selectedAvailableVersionIdx++
+		}
+		return m, nil
+
+	case keyInstall:
+		if m.currentView == viewAvailableVersions &&
+			m.selectedBinary != nil &&
+			len(m.githubAvailableVers) > 0 &&
+			m.selectedAvailableVersionIdx < len(m.githubAvailableVers) {
+			selectedRelease := m.githubAvailableVers[m.selectedAvailableVersionIdx]
+			version := selectedRelease.TagName
+			if version == "" {
+				version = "latest"
+			}
+			m.currentView = viewInstallBinary
+			m.installBinaryID = m.selectedBinary.UserID
+			m.installReturnView = viewVersions
+			m.installVersionInput.SetValue(version)
+			m.installVersionInput.Focus()
+			m.errorMessage = ""
+			m.successMessage = ""
+		}
+		return m, nil
+
+	case keyReleaseNotes, keyEnter:
+		if m.currentView == viewAvailableVersions &&
+			m.selectedBinary != nil &&
+			len(m.githubAvailableVers) > 0 &&
+			m.selectedAvailableVersionIdx < len(m.githubAvailableVers) {
+			selectedRelease := m.githubAvailableVers[m.selectedAvailableVersionIdx]
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
+			m.currentView = viewReleaseNotes
+			m.githubLoading = true
+			m.githubError = ""
+			m.githubReleaseInfo = nil
+			return m, fetchReleaseNotes(client, m.selectedBinary, selectedRelease.TagName, getDateFormat(m.config))
+		}
+		return m, nil
+
+	case keySwitch:
+		if m.currentView == viewRepositoryInfo && m.selectedBinary != nil && m.selectedBinary.Provider == "github" {
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
+			m.errorMessage = ""
+			m.successMessage = ""
+			return m, starRepository(client, m.selectedBinary)
+		}
+		return m, nil
+
+	case keyEsc:
+		if m.currentView == viewReleaseNotes && len(m.githubAvailableVers) > 0 {
+			// Return to available versions when release notes was opened from there.
+			m.currentView = viewAvailableVersions
+			m.githubReleaseInfo = nil
+			m.githubError = ""
+			return m, nil
+		}
+
+		// Return to versions view
+		m.currentView = viewVersions
+		m.githubReleaseInfo = nil
+		m.githubAvailableVers = nil
+		m.githubRepoInfo = nil
+		m.selectedAvailableVersionIdx = 0
+		m.githubError = ""
+		return m, nil
+
+	case keyQuit, keyCtrlC:
+		return m, tea.Quit
+	}
+
+	return m, nil
+}
+
+// Message types for GitHub data fetching
+type githubRepoInfoMsg struct {
+	info *githubRepositoryInfo
+	err  error
+}
+
+type githubAvailableVersionsMsg struct {
+	versions []githubReleaseInfo
+	err      error
+}
+
+type githubReleaseNotesMsg struct {
+	release *githubReleaseInfo
+	err     error
+}
+
+type githubRepoStarredMsg struct {
+	err error
+}
+
+// clientForBinary returns an *http.Client suitable for making GitHub API calls
+// on behalf of the given binary.
+//
+// When the TUI has already resolved a token at startup (githubTokenResolved is
+// true), that cached token is used directly — avoiding a repeated askpass
+// invocation for each call. Otherwise (e.g. askpassMode == "always", or
+// startup resolution is still pending) NewClientForBinary is called to resolve
+// fresh credentials.
+func (m model) clientForBinary(binary *database.Binary) (*http.Client, error) {
+	if !binary.Authenticated {
+		return &http.Client{}, nil
+	}
+
+	if m.githubTokenResolved {
+		return github.CreateHTTPClient(m.resolvedGithubToken)
+	}
+
+	return github.NewClientForBinary(binary)
+}
+
+// starRepository stars a GitHub repository for the authenticated user.
+func starRepository(client *http.Client, binary *database.Binary) tea.Cmd {
+	return func() tea.Msg {
+		if err := github.StarRepository(client, binary); err != nil {
+			return githubRepoStarredMsg{err: fmt.Errorf("failed to star repository: %w", err)}
+		}
+		return githubRepoStarredMsg{err: nil}
+	}
+}
+
+// fetchRepositoryInfo fetches repository information from GitHub
+func fetchRepositoryInfo(client *http.Client, binary *database.Binary) tea.Cmd {
+	return func() tea.Msg {
+		repoInfo, err := github.GetRepositoryInfo(client, binary)
+		if err != nil {
+			return githubRepoInfoMsg{err: err}
+		}
+
+		return githubRepoInfoMsg{
+			info: &githubRepositoryInfo{
+				Name:        repoInfo.Name,
+				FullName:    repoInfo.FullName,
+				Description: repoInfo.Description,
+				Stars:       repoInfo.StargazersCount,
+				Forks:       repoInfo.ForksCount,
+				HTMLURL:     repoInfo.HTMLURL,
+			},
+		}
+	}
+}
+
+// fetchAvailableVersions fetches available versions from GitHub
+func fetchAvailableVersions(client *http.Client, binary *database.Binary, dateFormat string) tea.Cmd {
+	return func() tea.Msg {
+		releases, err := github.ListAvailableVersions(client, binary, 20)
+		if err != nil {
+			return githubAvailableVersionsMsg{err: err}
+		}
+
+		var versions []githubReleaseInfo
+		for _, release := range releases {
+			versions = append(versions, githubReleaseInfo{
+				Name:        release.Name,
+				TagName:     release.TagName,
+				Body:        release.Body,
+				Prerelease:  release.Prerelease,
+				PublishedAt: release.PublishedAt.Format(dateFormat),
+				HTMLURL:     release.HTMLURL,
+			})
+		}
+
+		return githubAvailableVersionsMsg{versions: versions}
+	}
+}
+
+// fetchReleaseNotes fetches release notes from GitHub for a specific version
+func fetchReleaseNotes(client *http.Client, binary *database.Binary, version string, dateFormat string) tea.Cmd {
+	return func() tea.Msg {
+		releaseInfo, err := github.FetchReleaseNotes(client, binary, version)
+		if err != nil {
+			return githubReleaseNotesMsg{err: err}
+		}
+
+		return githubReleaseNotesMsg{
+			release: &githubReleaseInfo{
+				Name:        releaseInfo.Name,
+				TagName:     releaseInfo.TagName,
+				Body:        releaseInfo.Body,
+				Prerelease:  releaseInfo.Prerelease,
+				PublishedAt: releaseInfo.PublishedAt.Format(dateFormat),
+				HTMLURL:     releaseInfo.HTMLURL,
+			},
+		}
+	}
 }

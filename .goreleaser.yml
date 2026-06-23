@@ -1,0 +1,110 @@
+# GoReleaser configuration for binmate
+# See https://goreleaser.com for documentation
+
+version: 2
+
+before:
+  hooks:
+    # Ensure dependencies are up to date
+    - go mod download
+    - go mod verify
+
+builds:
+  - id: binmate
+    main: ./main.go
+    binary: binmate
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Use flags for static linking
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: binmate-archive
+    formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - LICENSE*
+      - README*
+      - CHANGELOG*
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  format: "{{ .Message }}{{ if .AuthorUsername }} (@{{ .AuthorUsername }}){{ end }}"
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - 'typo'
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: cturner8
+    name: binmate
+  draft: false
+  prerelease: auto
+  mode: append
+  header: |
+    ## Installation
+    
+    ### Unix (Linux/macOS)
+    
+    Use the install script:
+    ```bash
+    curl -fsSL https://binmate.cturner8.dev/install.sh | bash
+    ```
+    
+    ### Windows (PowerShell)
+    
+    Use the PowerShell install script:
+    ```powershell
+    irm https://binmate.cturner8.dev/install.ps1 | iex
+    ```
+    
+    ### Manual Installation
+    
+    Or download the appropriate binary for your platform below.
+  footer: |
+    **Full Changelog**: https://github.com/cturner8/binmate/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+# Snapshots (for testing releases locally)
+snapshot:
+  version_template: "{{ .Version }}-snapshot-{{.ShortCommit}}"
