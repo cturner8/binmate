@@ -4,6 +4,7 @@ import (
 	"cturner8/binmate/internal/core/config"
 	"cturner8/binmate/internal/database/repository"
 	"cturner8/binmate/internal/providers/github"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -14,7 +15,7 @@ func (m model) Init() tea.Cmd {
 	}
 
 	// Resolve the GitHub token once at startup unless the config requests per-call resolution.
-	if askpassModeFromConfig(m.config) != "always" {
+	if askpassModeFromConfig(m.config) == "startup" {
 		cmds = append(cmds, resolveGithubTokenCmd())
 	}
 
