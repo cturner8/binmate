@@ -57,8 +57,6 @@ func getHelpText(view viewState) string {
 		return "Type URL • enter: parse • esc: cancel • q: quit"
 	case viewAddBinaryForm:
 		return "tab/shift+tab: navigate fields • ctrl+s: save • esc: cancel • q: quit"
-	case viewDownloads:
-		return "1-3/shift+tab/ctrl+shift+tab: switch tabs • q: quit"
 	case viewConfiguration:
 		return "s: sync config to database • 1-3/shift+tab/ctrl+shift+tab: switch tabs • q: quit"
 	case viewHelp:

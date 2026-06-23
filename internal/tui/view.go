@@ -14,8 +14,6 @@ func (m model) View() string {
 		return m.renderInstallBinary()
 	case viewImportBinary:
 		return m.renderImportBinary()
-	case viewDownloads:
-		return m.renderDownloads()
 	case viewConfiguration:
 		return m.renderConfiguration()
 	case viewHelp:

@@ -127,6 +127,7 @@ func TestUpdateBinariesList_EnterViewVersions(t *testing.T) {
 			{Binary: &database.Binary{ID: 2, Name: "Binary2", UserID: "binary2"}},
 		},
 		selectedIndex: 0,
+		sortAscending: true,
 		dbService:     &repository.Service{},
 		config:        &config.Config{},
 	}
@@ -319,9 +320,9 @@ func TestGetTabForKey(t *testing.T) {
 		ok       bool
 	}{
 		{"1", viewBinariesList, true},
-		{"2", viewDownloads, true},
-		{"3", viewConfiguration, true},
-		{"4", viewHelp, true},
+		{"2", viewConfiguration, true},
+		{"3", viewHelp, true},
+		{"4", viewBinariesList, false},
 		{"5", viewBinariesList, false},
 		{"a", viewBinariesList, false},
 		{"q", viewBinariesList, false},
@@ -345,8 +346,7 @@ func TestGetNextTab(t *testing.T) {
 		current  viewState
 		expected viewState
 	}{
-		{viewBinariesList, viewDownloads},
-		{viewDownloads, viewConfiguration},
+		{viewBinariesList, viewConfiguration},
 		{viewConfiguration, viewHelp},
 		{viewHelp, viewBinariesList}, // Wraps around
 	}
@@ -367,8 +367,7 @@ func TestGetPreviousTab(t *testing.T) {
 		expected viewState
 	}{
 		{viewBinariesList, viewHelp}, // Wraps around to end
-		{viewDownloads, viewBinariesList},
-		{viewConfiguration, viewDownloads},
+		{viewConfiguration, viewBinariesList},
 		{viewHelp, viewConfiguration},
 	}
 
@@ -392,8 +391,8 @@ func TestHandleTabCycling_Tab(t *testing.T) {
 		t.Error("handleTabCycling(tab) should return handled = true")
 	}
 
-	if updatedModel.currentView != viewDownloads {
-		t.Errorf("handleTabCycling(tab) currentView = %v, want %v", updatedModel.currentView, viewDownloads)
+	if updatedModel.currentView != viewConfiguration {
+		t.Errorf("handleTabCycling(tab) currentView = %v, want %v", updatedModel.currentView, viewConfiguration)
 	}
 }
 
@@ -436,8 +435,8 @@ func TestUpdateBinariesList_TabSwitch(t *testing.T) {
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
-	if m2.currentView != viewDownloads {
-		t.Errorf("updateBinariesList('2') currentView = %v, want %v", m2.currentView, viewDownloads)
+	if m2.currentView != viewConfiguration {
+		t.Errorf("updateBinariesList('2') currentView = %v, want %v", m2.currentView, viewConfiguration)
 	}
 }
 

@@ -35,10 +35,3 @@ jobs:
         run: go test -v -race -coverprofile=coverage.out ./...
         env:
           CGO_ENABLED: 1
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v7.0.0
-        if: always()
-        with:
-          files: ./coverage.out
-          fail_ci_if_error: false
