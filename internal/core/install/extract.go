@@ -12,6 +12,10 @@ func ExtractAsset(srcPath string, binary *database.Binary, version string) (stri
 	}
 
 	switch binary.Format {
+	case "raw":
+		{
+			return extractRaw(srcPath, destDir, binary.Name)
+		}
 	case ".zip":
 		{
 			return extractZip(srcPath, destDir, binary.Name)
