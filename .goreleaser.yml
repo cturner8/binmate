@@ -57,6 +57,7 @@ checksum:
 changelog:
   sort: asc
   use: github
+  format: "{{ .Message }}{{ if .AuthorUsername }} (@{{ .AuthorUsername }}){{ end }}"
   filters:
     exclude:
       - '^docs:'
@@ -77,21 +78,32 @@ changelog:
 release:
   github:
     owner: cturner8
-    name: copilot-cli-challenge
+    name: binmate
   draft: false
   prerelease: auto
   mode: append
   header: |
     ## Installation
     
+    ### Unix (Linux/macOS)
+    
     Use the install script:
     ```bash
-    curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | bash
+    curl -fsSL https://binmate.cturner8.dev/install.sh | bash
     ```
+    
+    ### Windows (PowerShell)
+    
+    Use the PowerShell install script:
+    ```powershell
+    irm https://binmate.cturner8.dev/install.ps1 | iex
+    ```
+    
+    ### Manual Installation
     
     Or download the appropriate binary for your platform below.
   footer: |
-    **Full Changelog**: https://github.com/cturner8/copilot-cli-challenge/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/cturner8/binmate/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 # Snapshots (for testing releases locally)
 snapshot:

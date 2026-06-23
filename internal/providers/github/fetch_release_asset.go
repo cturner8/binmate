@@ -26,7 +26,7 @@ type Release struct {
 	Assets  []ReleaseAsset `json:"assets"`
 }
 
-func FetchReleaseAsset(binary *database.Binary, version string) (Release, ReleaseAsset, error) {
+func FetchReleaseAsset(client *http.Client, binary *database.Binary, version string) (Release, ReleaseAsset, error) {
 	if binary.ProviderPath == "" {
 		log.Panicln("path is required for binary config")
 	}
@@ -61,12 +61,6 @@ func FetchReleaseAsset(binary *database.Binary, version string) (Release, Releas
 		url = fmt.Sprintf("https://api.github.com/repos/%s/releases/tags/%s", binary.ProviderPath, tag)
 	}
 
-	// Create HTTP client with optional authentication
-	client, err := CreateHTTPClient(binary.Authenticated)
-	if err != nil {
-		return Release{}, ReleaseAsset{}, fmt.Errorf("failed to create HTTP client: %w", err)
-	}
-
 	response, err := client.Get(url)
 	if err != nil {
 		return Release{}, ReleaseAsset{}, fmt.Errorf("download asset: %w", err)
@@ -96,9 +90,13 @@ func FetchReleaseAsset(binary *database.Binary, version string) (Release, Releas
 		return Release{}, ReleaseAsset{}, fmt.Errorf("failed to find requested binary, no release assets")
 	}
 
+	log.Printf("Received release assets: %v", release.Assets)
+
 	// Create filter based on binary config
 	filter := NewAssetFilter()
-	filter.Extension = binary.Format // e.g., ".tar.gz", ".zip"
+	if binary.Format != "raw" {
+		filter.Extension = binary.Format // e.g., ".tar.gz", ".zip"
+	}
 	if binary.AssetRegex != nil {
 		filter.AssetRegex = *binary.AssetRegex // custom regex if provided
 	}
@@ -109,11 +107,15 @@ func FetchReleaseAsset(binary *database.Binary, version string) (Release, Releas
 		return Release{}, ReleaseAsset{}, fmt.Errorf("no matching assets found: %w", err)
 	}
 
+	log.Printf("Filtered assets: %v", filteredAssets)
+
 	// Select the best asset from filtered results
 	selectedAsset, err := SelectBestAsset(filteredAssets)
 	if err != nil {
 		return Release{}, ReleaseAsset{}, fmt.Errorf("failed to select asset: %w", err)
 	}
+
+	log.Printf("Selected asset: %v", selectedAsset)
 
 	return release, selectedAsset, nil
 }

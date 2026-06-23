@@ -61,13 +61,19 @@ Examples:
 						continue
 					}
 
-					release, _, err := github.FetchReleaseAsset(binaryConfig, "latest")
+					client, err := github.NewClientForBinary(binaryConfig)
 					if err != nil {
 						fmt.Fprintf(cmd.OutOrStdout(), "⚠ Failed to check %s: %v\n", b.Binary.Name, err)
 						continue
 					}
 
-					if b.ActiveVersion == "No active version" {
+					release, _, err := github.FetchReleaseAsset(client, binaryConfig, "latest")
+					if err != nil {
+						fmt.Fprintf(cmd.OutOrStdout(), "⚠ Failed to check %s: %v\n", b.Binary.Name, err)
+						continue
+					}
+
+					if b.ActiveVersion == "none" {
 						fmt.Fprintf(cmd.OutOrStdout(), "ℹ %s: No version installed (latest: %s)\n", b.Binary.Name, release.TagName)
 						updatesAvailable++
 					} else if b.ActiveVersion != release.TagName {
@@ -96,7 +102,12 @@ Examples:
 				return fmt.Errorf("only github provider is currently supported")
 			}
 
-			release, _, err := github.FetchReleaseAsset(binaryConfig, "latest")
+			client, err := github.NewClientForBinary(binaryConfig)
+			if err != nil {
+				return fmt.Errorf("failed to create HTTP client: %w", err)
+			}
+
+			release, _, err := github.FetchReleaseAsset(client, binaryConfig, "latest")
 			if err != nil {
 				return fmt.Errorf("failed to fetch latest release: %w", err)
 			}
