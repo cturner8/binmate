@@ -137,19 +137,13 @@ is a separate process and resolves the token once per invocation regardless of t
 setting.
 :::
 
-## Required token scopes
+## Authentication token requirements
 
-Create a fine-grained personal access token (or a classic token) with the following
-permissions:
+Create a new fine grained personal access token: [New fine-grained personal access token](https://github.com/settings/personal-access-tokens/new).
 
-| Permission | Reason |
-| --- | --- |
-| `public_repo` (classic) or "Contents" read (fine-grained) | Required to list releases and download assets from public repositories. |
-| `repo` (classic) or "Contents" read + "Metadata" read (fine-grained) | Required for private repositories. |
-| `public_repo` or `repo` write | Required only if you use `binmate star` to star repositories. |
+- **Repository access**: select "Public Repositories" to grant access to public repos only
+- (Optional) **Account permissions**: if you want to utilise the repo star functionality within binmate, you'll also need to grant "Starring" Read/Write access.
 
-For read-only usage with public repositories, a classic token with `public_repo` is
-sufficient.
 
 ## Next steps
 
