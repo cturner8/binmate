@@ -4,6 +4,13 @@ binmate is configured through a JSON file located at
 `~/.config/.binmate/config.json`. This page documents every field. For a guided
 introduction, see the [configuration guide](/guide/configuration).
 
+::: tip JSON schema validation
+
+The JSON schema is available at [https://binmate.cturner8.dev/schema.json](https://binmate.cturner8.dev/schema.json) if using an editor that supports JSON schema based intellisense.
+
+:::
+
+
 ## Top-level fields
 
 | Field       | Type   | Description                                                       |
