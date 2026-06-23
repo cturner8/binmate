@@ -74,6 +74,10 @@ type model struct {
 	importVersionInput textinput.Model
 	importFocusIdx     int
 
+	// GitHub authentication state
+	resolvedGithubToken string // token resolved at startup; empty if not yet resolved or unavailable
+	githubTokenResolved bool   // true once startup token resolution has been attempted
+
 	// GitHub views state
 	githubReleaseInfo           *githubReleaseInfo
 	githubAvailableVers         []githubReleaseInfo

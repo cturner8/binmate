@@ -26,7 +26,7 @@ type Release struct {
 	Assets  []ReleaseAsset `json:"assets"`
 }
 
-func FetchReleaseAsset(binary *database.Binary, version string) (Release, ReleaseAsset, error) {
+func FetchReleaseAsset(client *http.Client, binary *database.Binary, version string) (Release, ReleaseAsset, error) {
 	if binary.ProviderPath == "" {
 		log.Panicln("path is required for binary config")
 	}
@@ -59,12 +59,6 @@ func FetchReleaseAsset(binary *database.Binary, version string) (Release, Releas
 		}
 
 		url = fmt.Sprintf("https://api.github.com/repos/%s/releases/tags/%s", binary.ProviderPath, tag)
-	}
-
-	// Create HTTP client with optional authentication
-	client, err := CreateHTTPClient(binary.Authenticated)
-	if err != nil {
-		return Release{}, ReleaseAsset{}, fmt.Errorf("failed to create HTTP client: %w", err)
 	}
 
 	response, err := client.Get(url)
