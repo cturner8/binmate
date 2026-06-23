@@ -17,10 +17,11 @@ introduction, see the [configuration guide](/guide/configuration).
 
 Global settings apply to all binaries unless overridden on an individual binary.
 
-| Field                                       | Type    | Description                                                  |
-| ------------------------------------------- | ------- | ----------------------------------------------------------- |
-| `global.installPath`                        | string  | Default installation path for all binaries (e.g. `/usr/local/bin`). |
-| `global.providers.<provider>.authenticated` | boolean | Default authentication setting for a provider.              |
+| Field                                           | Type    | Description                                                                       |
+| ----------------------------------------------- | ------- | --------------------------------------------------------------------------------- |
+| `global.installPath`                            | string  | Default installation path for all binaries (e.g. `/usr/local/bin`).              |
+| `global.providers.<provider>.authenticated`     | boolean | Default authentication setting for a provider.                                    |
+| `global.providers.<provider>.askpassMode`       | string  | When to invoke the askpass script in the TUI: `"startup"` (default) or `"always"`. |
 
 ## Binary configuration
 
