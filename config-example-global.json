@@ -1,0 +1,29 @@
+{
+  "$schema": "./docs/src/public/schema.json",
+  "version": 1,
+  "global": {
+    "installPath": "/usr/local/bin",
+    "providers": {
+      "github": {
+        "authenticated": true
+      }
+    }
+  },
+  "binaries": [
+    {
+      "id": "ghcp",
+      "name": "copilot",
+      "provider": "github",
+      "path": "github/copilot-cli",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "gh",
+      "name": "gh",
+      "provider": "github",
+      "path": "cli/cli",
+      "format": ".tar.gz",
+      "installPath": "/opt/bin"
+    }
+  ]
+}

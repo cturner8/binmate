@@ -32,14 +32,22 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 		return nil, fmt.Errorf("only github provider is currently supported")
 	}
 
+	// Create HTTP client for this binary (authenticated if required)
+	client, err := github.NewClientForBinary(binaryConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create HTTP client: %w", err)
+	}
+
 	// Fetch release and asset information
-	release, asset, err := github.FetchReleaseAsset(binaryConfig, version)
+	release, asset, err := github.FetchReleaseAsset(client, binaryConfig, version)
 	if err != nil {
 		return nil, fmt.Errorf("fetch failed: %w", err)
 	}
 
+	log.Printf("Fetched asset %s from release %s", asset.Name, release.TagName)
+
 	// Download the asset
-	downloadPath, err := github.DownloadAsset(asset.BrowserDownloadUrl, asset.Name, binaryConfig.Authenticated)
+	downloadPath, err := github.DownloadAsset(client, binaryConfig.ProviderPath, asset.Id, asset.Name)
 	if err != nil {
 		return nil, fmt.Errorf("download failed: %w", err)
 	}
@@ -62,6 +70,25 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 	existingInstallation, err := dbService.Installations.Get(binaryConfig.ID, resolvedVersion)
 	if err == nil {
 		log.Printf("Version %s already installed", resolvedVersion)
+
+		// Even if already installed, ensure it's set as active version
+		// Handle optional InstallPath
+		customInstallPath := ""
+		if binaryConfig.InstallPath != nil {
+			customInstallPath = *binaryConfig.InstallPath
+		}
+
+		// Set as active version (create/update symlink)
+		symlinkPath, err := v.SetActiveVersion(existingInstallation.InstalledPath, customInstallPath, binaryConfig.Name, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to set active version: %w", err)
+		}
+
+		// Update active version in database
+		if err := dbService.Versions.Set(binaryConfig.ID, existingInstallation.ID, symlinkPath); err != nil {
+			return nil, fmt.Errorf("failed to save version: %w", err)
+		}
+
 		return &InstallBinaryResult{
 			Binary:       binaryConfig,
 			Installation: existingInstallation,
@@ -76,6 +103,8 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 	if err != nil {
 		return nil, fmt.Errorf("extraction failed: %w", err)
 	}
+
+	log.Printf("Extracted %s to %s", downloadPath, destPath)
 
 	// Compute checksum of extracted binary
 	binaryChecksum, err := crypto.ComputeSHA256(destPath)
@@ -96,7 +125,7 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 	}
 
 	// Set active version (create symlink)
-	symlinkPath, err := v.SetActiveVersion(destPath, customInstallPath, binaryConfig.Name)
+	symlinkPath, err := v.SetActiveVersion(destPath, customInstallPath, binaryConfig.Name, binaryConfig.Alias)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set active version: %w", err)
 	}

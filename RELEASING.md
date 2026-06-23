@@ -46,13 +46,116 @@ Once the tag is pushed, the following happens automatically:
 
 ### 4. Verify the Release
 
-1. Go to the [Releases page](https://github.com/cturner8/copilot-cli-challenge/releases)
+1. Go to the [Releases page](https://github.com/cturner8/binmate/releases)
 2. Verify the release was created successfully
-3. Test the install script:
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_VERSION=v1.0.0 bash
-   ```
-4. Verify the installed binary works correctly
+3. Run post-release verification (see [Post-Release Verification](#post-release-verification) section below)
+
+## Post-Release Verification
+
+After a release is published, comprehensive end-to-end testing should be performed to ensure the release works correctly across all supported platforms and architectures.
+
+### Automated E2E Testing
+
+The repository includes automated E2E tests that can be run via GitHub Actions:
+
+1. Go to the [E2E Tests workflow](https://github.com/cturner8/binmate/actions/workflows/e2e.yml)
+2. Click "Run workflow"
+3. Specify the version to test (e.g., `v1.0.0` or `latest`)
+4. Select platforms and architectures to test (or use `all` for comprehensive testing)
+5. Click "Run workflow" to start the tests
+
+The workflow will:
+- Test installation via install scripts (`install.sh` for Unix, `install.ps1` for Windows)
+- Run 24 core functionality tests on each platform/architecture
+- Upload test logs as artifacts
+- Report pass/fail status for each combination
+
+**Supported test combinations:**
+- Linux: amd64, arm64
+- macOS: amd64 (Intel), arm64 (Apple Silicon)
+- Windows: amd64, arm64
+
+### Manual Local Testing
+
+You can also run E2E tests locally on your machine:
+
+#### Unix (Linux/macOS)
+
+```bash
+# Test latest version
+./e2e-test.sh
+
+# Test specific version
+./e2e-test.sh v1.0.0
+
+# Or use environment variable
+BINMATE_VERSION=v1.0.0 ./e2e-test.sh
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Test latest version
+.\e2e-test.ps1
+
+# Test specific version
+.\e2e-test.ps1 -Version v1.0.0
+
+# Or use environment variable
+$env:BINMATE_VERSION = "v1.0.0"
+.\e2e-test.ps1
+```
+
+### Manual Installation Testing
+
+For manual verification:
+
+#### Unix (Linux/macOS)
+
+```bash
+# Test install.sh with latest version
+curl -fsSL https://binmate.cturner8.dev/install.sh | bash
+
+# Test install.sh with specific version
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_VERSION=v1.0.0 bash
+
+# Test with custom install directory
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_INSTALL_DIR=/tmp/binmate-test bash
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Test install.ps1 with latest version
+irm https://binmate.cturner8.dev/install.ps1 | iex
+
+# Test install.ps1 with specific version
+$env:BINMATE_VERSION = "v1.0.0"
+irm https://binmate.cturner8.dev/install.ps1 | iex
+
+# Test with custom install directory
+$env:BINMATE_INSTALL_DIR = "C:\Temp\binmate-test"
+irm https://binmate.cturner8.dev/install.ps1 | iex
+```
+
+### Issue Tracking
+
+To track verification progress, create a Post-Release Verification issue:
+
+1. Go to [Issues → New Issue](https://github.com/cturner8/binmate/issues/new/choose)
+2. Select "Post-Release Verification" template
+3. Fill in the version and release URL
+4. Use the checklist to track testing progress for each platform
+5. Link to automated E2E test results
+6. Document any issues found
+7. Close the issue once all verification is complete
+
+The template includes comprehensive checklists for:
+- All 6 platform/architecture combinations
+- Installation testing
+- Core functionality testing
+- Error handling verification
+- Additional release quality checks
 
 ## Release Workflow Details
 
@@ -78,13 +181,14 @@ The `.goreleaser.yml` file configures:
 - **Architectures**: amd64 and arm64
 - **Archive Format**: tar.gz
 - **Checksums**: SHA256
-- **Changelog**: Auto-generated from git commits
+- **Changelog**: Auto-generated from GitHub commits with SHA suppression and linked PR references
+- **Build metadata**: version, commit, and build date injected via linker flags (`-X main.version`, `-X main.commit`, `-X main.date`)
 
 ## Troubleshooting
 
 ### Release Workflow Fails
 
-1. Check the [Actions tab](https://github.com/cturner8/copilot-cli-challenge/actions) for error details
+1. Check the [Actions tab](https://github.com/cturner8/binmate/actions) for error details
 2. Common issues:
    - **Tests failing**: Fix tests before releasing
    - **CGO cross-compilation errors**: Ensure cross-compilation tools are installed
@@ -137,6 +241,23 @@ If automated release fails and you need to release manually:
    - Go to Releases → New Release
    - Upload binaries and checksums
    - Add release notes
+
+## Manual Release Build
+
+To verify a local build, run the following:
+
+basic build
+
+```bash
+go build -o /tmp/binmate
+```
+
+build with additional metadata flags (normally set automatically by `goreleaser`)
+
+```bash
+go build -o /tmp/binmate \
+   -ldflags "-X main.version=dev-local -X main.commit=$(git rev-parse --short HEAD) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" .
+```
 
 ## Post-Release
 

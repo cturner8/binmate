@@ -15,12 +15,12 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
         with:
           fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6.4.0
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -29,9 +29,7 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        run: go test -v -race ./...
-        env:
-          CGO_ENABLED: 1
+        run: go test -race ./...
 
   release:
     name: Build and Release
@@ -40,26 +38,18 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
         with:
           fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6.4.0
         with:
           go-version-file: 'go.mod'
           cache: true
 
-      - name: Install cross-compilation tools
-        run: |
-          sudo apt-get update
-          # Install Zig for cross-compilation
-          # Note: Zig does not have a 'stable' channel on Snap; 'beta' is the most stable available
-          # The beta channel provides tagged releases (e.g., 0.15.x), while 'edge' provides nightly builds
-          sudo snap install zig --beta --classic
-
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7.2.2
         with:
           distribution: goreleaser
           version: '~> v2'

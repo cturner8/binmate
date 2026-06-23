@@ -1,14 +1,16 @@
-# DEV GitHub Copilot CLI Challenge
+# binmate - A cross-platform binary manager
 
-[![Tests](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/test.yml/badge.svg)](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/test.yml)
-[![Release](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/release.yml/badge.svg)](https://github.com/cturner8/copilot-cli-challenge/actions/workflows/release.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cturner8/copilot-cli-challenge)](https://goreportcard.com/report/github.com/cturner8/copilot-cli-challenge)
+[![Tests](https://github.com/cturner8/binmate/actions/workflows/test.yml/badge.svg)](https://github.com/cturner8/binmate/actions/workflows/test.yml)
+[![Release](https://github.com/cturner8/binmate/actions/workflows/release.yml/badge.svg)](https://github.com/cturner8/binmate/actions/workflows/release.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cturner8/binmate)](https://goreportcard.com/report/github.com/cturner8/binmate)
 
-Submission for the [2026 DEV GitHub Copilot CLI challenge](https://dev.to/devteam/join-the-github-copilot-cli-challenge-win-github-universe-tickets-copilot-pro-subscriptions-and-50af).
+> This was originally developed as a submission for the [2026 DEV GitHub Copilot CLI challenge](https://dev.to/devteam/join-the-github-copilot-cli-challenge-win-github-universe-tickets-copilot-pro-subscriptions-and-50af).
 
 ## About binmate
 
 **binmate** is a CLI/TUI application for managing binary installations from GitHub releases. It provides an easy way to install, manage, and switch between different versions of command-line tools.
+
+![cover image](./images/cover.png)
 
 ### Key Features
 
@@ -19,37 +21,78 @@ Submission for the [2026 DEV GitHub Copilot CLI challenge](https://dev.to/devtea
 - **Database Tracking**: SQLite database tracks all installations and versions
 - **Checksum Verification**: Ensures integrity of downloaded binaries
 
+See [demo.md](./DEMO.md) for a demo and screenshots.
+
 ## Installation
 
 ### Using the Install Script (Recommended)
 
+#### Unix (Linux/macOS)
+
 Install the latest version using our install script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | bash
 ```
+
+By default, the installer now auto-imports the installed `binmate` binary for self-management using its resolved release URL and version.
 
 Install a specific version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_VERSION=v1.0.0 bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_VERSION=v1.0.0 bash
 ```
 
 Install to a custom directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cturner8/copilot-cli-challenge/main/install.sh | BINMATE_INSTALL_DIR=$HOME/.local/bin bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_INSTALL_DIR=$HOME/.local/bin bash
+```
+
+Skip automatic post-install self-import:
+
+```bash
+curl -fsSL https://binmate.cturner8.dev/install.sh | BINMATE_SKIP_AUTO_IMPORT=1 bash
+```
+
+#### Windows (PowerShell)
+
+Install the latest version using our PowerShell install script:
+
+```powershell
+irm https://binmate.cturner8.dev/install.ps1 | iex
+```
+
+Install a specific version:
+
+```powershell
+$env:BINMATE_VERSION = "v1.0.0"
+irm https://binmate.cturner8.dev/install.ps1 | iex
+```
+
+Install to a custom directory:
+
+```powershell
+$env:BINMATE_INSTALL_DIR = "$env:LOCALAPPDATA\binmate\bin"
+irm https://binmate.cturner8.dev/install.ps1 | iex
+```
+
+Skip automatic post-install self-import:
+
+```powershell
+$env:BINMATE_SKIP_AUTO_IMPORT = "1"
+irm https://binmate.cturner8.dev/install.ps1 | iex
 ```
 
 ### Manual Installation
 
-Download the appropriate binary for your platform from the [releases page](https://github.com/cturner8/copilot-cli-challenge/releases), extract it, and place it in your PATH.
+Download the appropriate binary for your platform from the [releases page](https://github.com/cturner8/binmate/releases), extract it, and place it in your PATH.
 
 ### Building from Source
 
 ```bash
-git clone https://github.com/cturner8/copilot-cli-challenge.git
-cd copilot-cli-challenge
+git clone https://github.com/cturner8/binmate.git
+cd binmate
 go build -o binmate .
 ```
 
@@ -157,12 +200,28 @@ Sync the configuration file with the database:
 binmate sync
 ```
 
+#### Version Information
+
+Show the current binmate version:
+
+```bash
+binmate --version
+binmate version
+```
+
+Show detailed build metadata:
+
+```bash
+binmate version --verbose
+```
+
 ## Configuration
 
 Configuration is stored in `~/.config/.binmate/config.json`:
 
 ```json
 {
+  "$schema": "https://binmate.cturner8.dev/schema.json",
   "version": 1,
   "binaries": [
     {
@@ -176,16 +235,76 @@ Configuration is stored in `~/.config/.binmate/config.json`:
 }
 ```
 
+**If using VSCode, you'll need to allow use of the binmate json schema in `.vscode/settings.json`**:
+
+```jsonc
+// .vscode/settings.json
+{
+ "json.schemaDownload.trustedDomains": {
+    "https://binmate.cturner8.dev": true,
+  }
+}
+```
+
+### Global Configuration
+
+You can define global defaults that apply to all binaries unless overridden:
+
+```json
+{
+  "$schema": "https://binmate.cturner8.dev/schema.json",
+  "version": 1,
+  "global": {
+    "installPath": "/usr/local/bin",
+    "providers": {
+      "github": {
+        "authenticated": true
+      }
+    }
+  },
+  "binaries": [
+    {
+      "id": "gh",
+      "name": "gh",
+      "provider": "github",
+      "path": "cli/cli",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "fzf",
+      "name": "fzf",
+      "provider": "github",
+      "path": "junegunn/fzf",
+      "format": ".tar.gz",
+      "installPath": "/opt/bin"
+    }
+  ]
+}
+```
+
+In this example:
+- All binaries will use `/usr/local/bin` as the install path by default
+- All binaries will use GitHub authentication by default to avoid rate limits
+- The `fzf` binary overrides the global install path with `/opt/bin`
+
 ### Configuration Fields
+
+#### Global Configuration
+
+- `global.installPath`: (optional) Default installation path for all binaries (e.g., `/usr/local/bin`)
+- `global.providers.<provider>.authenticated`: (optional) Default authentication setting for a provider
+
+#### Binary Configuration
 
 - `id`: Unique identifier for the binary
 - `name`: Display name of the binary
 - `provider`: Provider type (currently only "github" supported)
 - `path`: Repository path (e.g., "owner/repo")
 - `format`: Archive format (.tar.gz, .zip, .tgz)
-- `installPath`: (optional) Custom installation path
+- `installPath`: (optional) Custom installation path (overrides global.installPath)
 - `assetRegex`: (optional) Regex to filter release assets
 - `releaseRegex`: (optional) Regex to filter releases
+- `authenticated`: (optional) Use authentication for API calls (overrides provider default)
 
 ## Database
 
@@ -224,22 +343,3 @@ internal/
     github/             # GitHub releases API
   tui/                  # Terminal UI (Bubble Tea)
 ```
-
-## Copilot Agents
-
-The project utilises custom copilot agents from the [awesome-copilot](https://github.com/github/awesome-copilot/blob/main/docs/README.agents.md) repository:
-- Context7 Expert
-- Critical Thinking
-- Devils Advocate
-- Gilfoyle
-- Go MCP Server Development Expert (revised slightly to be a generic go agent, see [go-expert.agent.md](./.github/agents/go-expert.agent.md))
-- SQLite Database Administrator (revised from PostgreSQL Database Administrator agent, see [sqlite-dba.agent.md](./.github/agents/sqlite-dba.agent.md))
-
-## Models
-
-This project utilised the following GitHub Copilot models:
-
-- Claude Opus 4.5
-- Claude Sonnet 4.5
-- Claude Haiku 4.5
-- OpenAI GPT 5.1 Codex Max (xhigh reasoning mode)

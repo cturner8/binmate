@@ -55,13 +55,20 @@ type (
 		err      error
 	}
 
+	// binaryImportedMsg is sent when a binary is imported
+	binaryImportedMsg struct {
+		binary *database.Binary
+		err    error
+	}
+
 	// updateCheckMsg is sent when update check is complete
 	updateCheckMsg struct {
-		binaryID       string
-		currentVersion string
-		latestVersion  string
-		hasUpdate      bool
-		err            error
+		binaryID        string
+		currentVersion  string
+		latestVersion   string
+		hasUpdate       bool
+		latestInstalled bool // true if latest version is installed but not active
+		err             error
 	}
 
 	// configSyncedMsg is sent when config sync is complete
@@ -77,5 +84,11 @@ type (
 	// successMsg represents a success notification
 	successMsg struct {
 		message string
+	}
+
+	// githubTokenResolvedMsg is sent when GitHub token resolution at startup completes
+	githubTokenResolvedMsg struct {
+		token string
+		err   error
 	}
 )
