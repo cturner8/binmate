@@ -1,10 +1,10 @@
-# DEV GitHub Copilot CLI Challenge
+# binmate - A cross-platform binary manager
 
 [![Tests](https://github.com/cturner8/binmate/actions/workflows/test.yml/badge.svg)](https://github.com/cturner8/binmate/actions/workflows/test.yml)
 [![Release](https://github.com/cturner8/binmate/actions/workflows/release.yml/badge.svg)](https://github.com/cturner8/binmate/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cturner8/binmate)](https://goreportcard.com/report/github.com/cturner8/binmate)
 
-Submission for the [2026 DEV GitHub Copilot CLI challenge](https://dev.to/devteam/join-the-github-copilot-cli-challenge-win-github-universe-tickets-copilot-pro-subscriptions-and-50af).
+> This was originally developed as a submission for the [2026 DEV GitHub Copilot CLI challenge](https://dev.to/devteam/join-the-github-copilot-cli-challenge-win-github-universe-tickets-copilot-pro-subscriptions-and-50af).
 
 ## About binmate
 
@@ -343,23 +343,3 @@ internal/
     github/             # GitHub releases API
   tui/                  # Terminal UI (Bubble Tea)
 ```
-
-## Copilot Agents
-
-The project utilises custom copilot agents from the [awesome-copilot](https://github.com/github/awesome-copilot/blob/main/docs/README.agents.md) repository:
-- Critical Thinking
-- Go MCP Server Development Expert (revised slightly to be a generic go agent, see [go-expert.agent.md](./.github/agents/go-expert.agent.md))
-- SQLite Database Administrator (revised from PostgreSQL Database Administrator agent, see [sqlite-dba.agent.md](./.github/agents/sqlite-dba.agent.md))
-
-## Models
-
-This project utilised the following GitHub Copilot models:
-
-- Claude 
-  - Opus 4.5
-  - Opus 4.6
-  - Sonnet 4.5
-  - Haiku 4.5
-- OpenAI
-  - GPT 5.2 Codex (high reasoning mode)
-  - GPT 5.3 Codex (high reasoning mode)

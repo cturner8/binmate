@@ -80,6 +80,9 @@ In this example:
 - All binaries use GitHub authentication by default to avoid rate limits.
 - The `fzf` binary overrides the global install path with `/opt/bin`.
 
+See the [authentication guide](/guide/authentication) for the full list of supported
+token sources, askpass script setup, and the `askpassMode` option.
+
 ## Syncing changes
 
 After editing the configuration file by hand, run `binmate sync` to reconcile the

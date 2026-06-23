@@ -11,9 +11,9 @@ binmate
 The interface uses a warm orange theme and a set of icons to help you navigate
 quickly. The main views are organised into tabs:
 
-- 📦 **Binaries** — browse and manage configured binaries
-- ⚙️ **Config** — view the current configuration
-- ❓ **Help** — keyboard shortcuts and tips
+- 📦 **Binaries** - browse and manage configured binaries
+- ⚙️ **Config** - view the current configuration
+- ❓ **Help** - keyboard shortcuts and tips
 
 ## Demo
 

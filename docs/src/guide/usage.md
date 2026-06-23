@@ -4,6 +4,12 @@ binmate can be driven either through its interactive TUI or via individual CLI
 commands. This page covers everyday usage; see [the interface](/guide/interface) for a
 tour of the TUI and the [CLI reference](/reference/cli) for the full command list.
 
+::: tip GitHub authentication recommended
+Authenticating with GitHub avoids API rate limits and unlocks private repository
+access. See the [authentication guide](/guide/authentication) to set up a token or
+askpass script.
+:::
+
 ## Interactive mode
 
 Launch the TUI for interactive management by running binmate with no arguments:

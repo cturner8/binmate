@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "binmate"
   text: "A cross-platform binary manager"
-  tagline: Install, manage, and switch between versions of command-line tools from GitHub releases — straight from your terminal.
+  tagline: Install, manage, and switch between versions of command-line tools from GitHub releases - straight from your terminal.
   actions:
     - theme: brand
       text: Get Started

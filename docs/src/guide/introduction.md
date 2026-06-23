@@ -8,8 +8,8 @@ versions of command-line tools.
 
 ## Why binmate?
 
-Keeping command-line tools up to date — and occasionally pinning them to a specific
-version — usually means juggling install scripts, archives, and `PATH` entries by
+Keeping command-line tools up to date - and occasionally pinning them to a specific
+version - usually means juggling install scripts, archives, and `PATH` entries by
 hand. binmate brings all of this together:
 
 - Fetch releases directly from GitHub.
@@ -19,12 +19,12 @@ hand. binmate brings all of this together:
 
 ## Key Features
 
-- **Interactive TUI** — Browse and manage binaries through a Terminal User Interface.
-- **CLI Commands** — Automate binary management with a command-line interface.
-- **Version Management** — Install multiple versions and switch between them.
-- **GitHub Integration** — Automatically fetch releases from GitHub repositories.
-- **Database Tracking** — A SQLite database tracks all installations and versions.
-- **Checksum Verification** — Ensures the integrity of downloaded binaries.
+- **Interactive TUI** - Browse and manage binaries through a Terminal User Interface.
+- **CLI Commands** - Automate binary management with a command-line interface.
+- **Version Management** - Install multiple versions and switch between them.
+- **GitHub Integration** - Automatically fetch releases from GitHub repositories.
+- **Database Tracking** - A SQLite database tracks all installations and versions.
+- **Checksum Verification** - Ensures the integrity of downloaded binaries.
 
 ## How it works
 

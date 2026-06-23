@@ -56,6 +56,7 @@ export default defineConfig({
           items: [
             { text: "The Interface", link: "/guide/interface" },
             { text: "Configuration", link: "/guide/configuration" },
+            { text: "Authentication", link: "/guide/authentication" },
           ],
         },
         {

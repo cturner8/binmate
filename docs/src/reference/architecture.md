@@ -34,15 +34,15 @@ internal/
 
 ## Layers
 
-- **CLI (`internal/cli`)** — Defines each command and parses user input. The root
+- **CLI (`internal/cli`)** - Defines each command and parses user input. The root
   command launches the TUI; the remaining commands provide scriptable equivalents.
-- **Core (`internal/core`)** — The business logic: managing binaries and versions,
+- **Core (`internal/core`)** - The business logic: managing binaries and versions,
   parsing GitHub URLs, extracting archives, and verifying checksums.
-- **Database (`internal/database`)** — A SQLite data layer with a repository per
+- **Database (`internal/database`)** - A SQLite data layer with a repository per
   entity. See the [database reference](/reference/database) for details.
-- **Providers (`internal/providers`)** — Integrations with external sources. GitHub is
+- **Providers (`internal/providers`)** - Integrations with external sources. GitHub is
   currently the only supported provider.
-- **TUI (`internal/tui`)** — The interactive Terminal UI, built with
+- **TUI (`internal/tui`)** - The interactive Terminal UI, built with
   [Bubble Tea](https://github.com/charmbracelet/bubbletea) and following the
   Elm Architecture (Model–Update–View).
 
@@ -51,8 +51,8 @@ internal/
 binmate is written in [Go](https://go.dev/) and builds on a small set of well-known
 libraries:
 
-- **[Cobra](https://github.com/spf13/cobra)** — CLI framework for command structure.
-- **[Viper](https://github.com/spf13/viper)** — Configuration management.
-- **[Bubble Tea](https://github.com/charmbracelet/bubbletea)** — Terminal UI framework.
-- **[Lip Gloss](https://github.com/charmbracelet/lipgloss)** — Terminal styling.
-- **SQLite** — Embedded database for state persistence.
+- **[Cobra](https://github.com/spf13/cobra)** - CLI framework for command structure.
+- **[Viper](https://github.com/spf13/viper)** - Configuration management.
+- **[Bubble Tea](https://github.com/charmbracelet/bubbletea)** - Terminal UI framework.
+- **[Lip Gloss](https://github.com/charmbracelet/lipgloss)** - Terminal styling.
+- **SQLite** - Embedded database for state persistence.

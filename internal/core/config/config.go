@@ -22,7 +22,8 @@ type GlobalConfig struct {
 
 // ProviderDefaults represents provider-level configuration defaults
 type ProviderDefaults struct {
-	Authenticated bool `mapstructure:"authenticated"` // Whether to use authentication for API calls
+	Authenticated bool   `mapstructure:"authenticated"` // Whether to use authentication for API calls
+	AskpassMode   string `mapstructure:"askpassMode"`   // When to invoke askpass: "startup" (default) or "always"
 }
 
 type Config struct {

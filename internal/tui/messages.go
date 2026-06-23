@@ -85,4 +85,10 @@ type (
 	successMsg struct {
 		message string
 	}
+
+	// githubTokenResolvedMsg is sent when GitHub token resolution at startup completes
+	githubTokenResolvedMsg struct {
+		token string
+		err   error
+	}
 )
