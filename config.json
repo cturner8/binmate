@@ -44,6 +44,13 @@
       "provider": "github",
       "path": "sharkdp/bat",
       "format": ".tar.gz"
+    },
+    {
+      "id": "mkcert", 
+      "name": "mkcert", 
+      "provider": "github",
+      "path": "filosottile/mkcert",
+      "format": "raw"
     }
   ]
 }

@@ -69,6 +69,21 @@ You can define global defaults that apply to all binaries unless overridden:
       "path": "junegunn/fzf",
       "format": ".tar.gz",
       "installPath": "/opt/bin"
+    },
+    {
+      "id": "mkcert", 
+      "name": "mkcert", 
+      "provider": "github",
+      "path": "filosottile/mkcert",
+      "format": "raw"
+    },
+    {
+      "id": "bun",
+      "name": "bun",
+      "provider": "github",
+      "path": "oven-sh/bun",
+      "format": ".zip",
+      "releaseRegex": "bun-"
     }
   ]
 }
@@ -76,9 +91,13 @@ You can define global defaults that apply to all binaries unless overridden:
 
 In this example:
 
-- All binaries use `/usr/local/bin` as the install path by default.
+- All binaries use `/usr/local/bin` as the install path by default as defined in the `global` section.
 - All binaries use GitHub authentication by default to avoid rate limits.
 - The `fzf` binary overrides the global install path with `/opt/bin`.
+- `gh` and `fzf` release assets are expected to be tar archives.
+- `bun` release assets are expected to be a zip archive.
+- `mkcert` release assets are expected to be raw uncompressed binaries.
+
 
 See the [authentication guide](/guide/authentication) for the full list of supported
 token sources, askpass script setup, and the `askpassMode` option.

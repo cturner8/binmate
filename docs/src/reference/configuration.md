@@ -40,7 +40,7 @@ Each entry in the `binaries` array describes a single binary.
 | `name`          | string  | Yes      | Display name of the binary.                                      |
 | `provider`      | string  | Yes      | Provider type (currently only `github` is supported).            |
 | `path`          | string  | Yes      | Repository path (e.g. `owner/repo`).                             |
-| `format`        | string  | Yes      | Archive format (`.tar.gz`, `.zip`, `.tgz`).                      |
+| `format`        | string  | Yes      | Archive format (`.tar.gz`, `.zip`, `raw`).                      |
 | `installPath`   | string  | No       | Custom installation path (overrides `global.installPath`).       |
 | `assetRegex`    | string  | No       | Regex to filter release assets.                                  |
 | `releaseRegex`  | string  | No       | Regex to filter releases.                                        |
@@ -49,7 +49,13 @@ Each entry in the `binaries` array describes a single binary.
 ## Supported values
 
 - **Providers**: `github` (currently the only supported provider).
-- **Formats**: `.tar.gz`, `.zip`, `.tgz`.
+- **Formats**: `.tar.gz`, `.zip`, `raw`.
+
+::: tip
+
+Use format `raw` when an application distributes raw uncompressed binaries in release assets (e.g. `mkcert`, `kind`, `minikube`)
+
+:::
 
 ## Example
 
@@ -80,6 +86,13 @@ Each entry in the `binaries` array describes a single binary.
       "path": "junegunn/fzf",
       "format": ".tar.gz",
       "installPath": "/opt/bin"
+    },
+    {
+      "id": "mkcert", 
+      "name": "mkcert", 
+      "provider": "github",
+      "path": "filosottile/mkcert",
+      "format": "raw"
     }
   ]
 }
