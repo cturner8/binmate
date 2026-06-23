@@ -14,14 +14,7 @@ func (m model) Init() tea.Cmd {
 	}
 
 	// Resolve the GitHub token once at startup unless the config requests per-call resolution.
-	askpassMode := ""
-	if providers := m.config.Global.Providers; providers != nil {
-		if gh, ok := providers["github"]; ok {
-			askpassMode = gh.AskpassMode
-		}
-	}
-
-	if askpassMode != "always" {
+	if askpassModeFromConfig(m.config) != "always" {
 		cmds = append(cmds, resolveGithubTokenCmd())
 	}
 
@@ -45,7 +38,8 @@ func resolveGithubTokenCmd() tea.Cmd {
 	}
 }
 
-// clientForConfig resolves the askpass mode from the config.
+// askpassModeFromConfig returns the configured askpass mode for the GitHub
+// provider, or an empty string if not set.
 func askpassModeFromConfig(cfg *config.Config) string {
 	if cfg == nil {
 		return ""
