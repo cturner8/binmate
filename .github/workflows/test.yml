@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  code-quality: write
 
 jobs:
   test:
@@ -32,13 +33,13 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out ./...
+        run: go test -v -race -coverprofile=coverage.xml ./...
         env:
           CGO_ENABLED: 1
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v7.0.0
-        if: always()
+        uses: actions/upload-code-coverage@v1.3.0
         with:
-          files: ./coverage.out
-          fail_ci_if_error: false
+          file: coverage.xml
+          language: Go
+          label: code-coverage/go
