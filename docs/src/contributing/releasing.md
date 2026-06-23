@@ -32,14 +32,14 @@ git push origin v1.0.0
 
 Once the tag is pushed, the following happens automatically:
 
-1. **GitHub Actions triggers** — The release workflow
+1. **GitHub Actions triggers** - The release workflow
    (`.github/workflows/release.yml`) is triggered.
-2. **Tests run** — All tests are executed with race detection enabled.
-3. **GoReleaser builds** — If tests pass, GoReleaser builds binaries for:
+2. **Tests run** - All tests are executed with race detection enabled.
+3. **GoReleaser builds** - If tests pass, GoReleaser builds binaries for:
    - Linux (amd64, arm64)
    - macOS / Darwin (amd64, arm64)
-4. **Checksums generated** — SHA256 checksums are computed for all binaries.
-5. **GitHub release created** — A new GitHub release is created with:
+4. **Checksums generated** - SHA256 checksums are computed for all binaries.
+5. **GitHub release created** - A new GitHub release is created with:
    - Release notes (auto-generated from commits)
    - Binary archives for each platform
    - Checksum file
@@ -204,9 +204,9 @@ The `.goreleaser.yml` file configures:
 1. Check the [Actions tab](https://github.com/cturner8/binmate/actions) for error
    details.
 2. Common issues:
-   - **Tests failing** — Fix tests before releasing.
-   - **CGO cross-compilation errors** — Ensure cross-compilation tools are installed.
-   - **GoReleaser errors** — Check `.goreleaser.yml` syntax.
+   - **Tests failing** - Fix tests before releasing.
+   - **CGO cross-compilation errors** - Ensure cross-compilation tools are installed.
+   - **GoReleaser errors** - Check `.goreleaser.yml` syntax.
 
 ### Build fails for a specific platform
 
@@ -228,16 +228,16 @@ If users report install script problems:
 
 binmate follows [Semantic Versioning](https://semver.org/):
 
-- **MAJOR** version — Breaking changes.
-- **MINOR** version — New features (backward compatible).
-- **PATCH** version — Bug fixes (backward compatible).
+- **MAJOR** version - Breaking changes.
+- **MINOR** version - New features (backward compatible).
+- **PATCH** version - Bug fixes (backward compatible).
 
 Examples:
 
-- `v1.0.0` — Initial release.
-- `v1.1.0` — New feature added.
-- `v1.1.1` — Bug fix.
-- `v2.0.0` — Breaking change.
+- `v1.0.0` - Initial release.
+- `v1.1.0` - New feature added.
+- `v1.1.1` - Bug fix.
+- `v2.0.0` - Breaking change.
 
 ## Manual release (emergency)
 

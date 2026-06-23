@@ -17,12 +17,12 @@ requests per hour.
 When authentication is required, binmate resolves a token by trying the following
 sources in order. The first non-empty result is used:
 
-1. **`BINMATE_GITHUB_ASKPASS` script** — executes the script and captures its
+1. **`BINMATE_GITHUB_ASKPASS` script** - executes the script and captures its
    standard output as the token.
-2. **`GITHUB_ASKPASS` script** — same behaviour; used as a fallback when
+2. **`GITHUB_ASKPASS` script** - same behaviour; used as a fallback when
    `BINMATE_GITHUB_ASKPASS` is not set.
-3. **`BINMATE_GITHUB_TOKEN`** — a static token specific to binmate.
-4. **`GITHUB_TOKEN`** — the standard GitHub token variable (commonly set in CI
+3. **`BINMATE_GITHUB_TOKEN`** - a static token specific to binmate.
+4. **`GITHUB_TOKEN`** - the standard GitHub token variable (commonly set in CI
    environments).
 
 If none of the sources produces a token, and a binary is configured with
@@ -49,7 +49,7 @@ other tools.
 
 An askpass script is an executable that prints a token to standard output. This
 allows binmate to retrieve credentials from a password manager or secrets store at
-run time — without storing the token in a plain-text environment variable.
+run time - without storing the token in a plain-text environment variable.
 
 Create a script that prints a token and nothing else:
 
