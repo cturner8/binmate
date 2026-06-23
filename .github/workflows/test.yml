@@ -35,7 +35,7 @@ jobs:
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.xml ./...
         env:
-          CGO_ENABLED: 0
+          CGO_ENABLED: 1
 
       - name: Upload coverage
         uses: actions/upload-code-coverage@v1.3.0
