@@ -112,10 +112,11 @@
         },
         "format": {
           "type": "string",
-          "description": "Archive format of the release",
+          "description": "Format of the binary asset",
           "enum": [
             ".tar.gz",
-            ".zip"
+            ".zip",
+            "raw"
           ]
         },
         "releaseRegex": {
