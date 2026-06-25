@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -9,6 +10,14 @@ import (
 	"cturner8/binmate/internal/database"
 	"cturner8/binmate/internal/database/repository"
 )
+
+// ansiEscape matches ANSI escape sequences so they can be stripped from rendered output.
+// Lipgloss v2 wraps each character individually, so plain-text comparisons must use stripped output.
+var ansiEscape = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func stripANSI(s string) string {
+	return ansiEscape.ReplaceAllString(s, "")
+}
 
 func TestRenderBinariesList_EmptyState(t *testing.T) {
 	m := initialModel(&repository.Service{}, &config.Config{})
@@ -25,7 +34,7 @@ func TestRenderBinariesList_EmptyState(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderBinariesList() empty state should contain %q", expected)
 		}
 	}
@@ -44,7 +53,7 @@ func TestRenderBinariesList_LoadingState(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderBinariesList() loading state should contain %q", expected)
 		}
 	}
@@ -100,7 +109,7 @@ func TestRenderBinariesList_WithBinaries(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderBinariesList() with binaries should contain %q", expected)
 		}
 	}
@@ -126,7 +135,7 @@ func TestRenderBinariesList_WithErrorMessage(t *testing.T) {
 
 	result := m.renderBinariesList()
 
-	if !strings.Contains(result, "Error: Failed to load binaries") {
+	if !strings.Contains(stripANSI(result), "Error: Failed to load binaries") {
 		t.Errorf("renderBinariesList() should display error message")
 	}
 }
@@ -151,7 +160,7 @@ func TestRenderBinariesList_WithSuccessMessage(t *testing.T) {
 
 	result := m.renderBinariesList()
 
-	if !strings.Contains(result, "Binary added successfully") {
+	if !strings.Contains(stripANSI(result), "Binary added successfully") {
 		t.Errorf("renderBinariesList() should display success message")
 	}
 }
@@ -185,7 +194,7 @@ func TestRenderBinariesList_ConfirmingRemove(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderBinariesList() confirming remove should contain %q", expected)
 		}
 	}
@@ -217,7 +226,7 @@ func TestRenderVersions_EmptyState(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderVersions() empty state should contain %q", expected)
 		}
 	}
@@ -244,7 +253,7 @@ func TestRenderVersions_LoadingState(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderVersions() loading state should contain %q", expected)
 		}
 	}
@@ -298,7 +307,7 @@ func TestRenderVersions_WithInstallations(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderVersions() with installations should contain %q", expected)
 		}
 	}
@@ -321,7 +330,7 @@ func TestRenderDownloads(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderDownloads() should contain %q", expected)
 		}
 	}
@@ -334,7 +343,7 @@ func TestRenderDownloads_LoadingState(t *testing.T) {
 
 	result := m.renderDownloads()
 
-	if !strings.Contains(result, "Loading downloads...") {
+	if !strings.Contains(stripANSI(result), "Loading downloads...") {
 		t.Errorf("renderDownloads() loading state should contain loading message")
 	}
 }
@@ -377,7 +386,7 @@ func TestRenderConfiguration(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderConfiguration() should contain %q", expected)
 		}
 	}
@@ -391,7 +400,7 @@ func TestRenderConfiguration_NoConfig(t *testing.T) {
 
 	result := m.renderConfiguration()
 
-	if !strings.Contains(result, "No configuration loaded") {
+	if !strings.Contains(stripANSI(result), "No configuration loaded") {
 		t.Errorf("renderConfiguration() with no config should show empty message")
 	}
 }
@@ -403,7 +412,7 @@ func TestRenderConfiguration_LoadingState(t *testing.T) {
 
 	result := m.renderConfiguration()
 
-	if !strings.Contains(result, "Syncing configuration...") {
+	if !strings.Contains(stripANSI(result), "Syncing configuration...") {
 		t.Errorf("renderConfiguration() loading state should contain syncing message")
 	}
 }
@@ -429,7 +438,7 @@ func TestRenderConfiguration_ManyBinaries(t *testing.T) {
 
 	result := m.renderConfiguration()
 
-	if !strings.Contains(result, "... and 5 more") {
+	if !strings.Contains(stripANSI(result), "... and 5 more") {
 		t.Errorf("renderConfiguration() with many binaries should show truncation message")
 	}
 }
@@ -457,7 +466,7 @@ func TestRenderHelp(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderHelp() should contain %q", expected)
 		}
 	}
@@ -477,7 +486,7 @@ func TestRenderTabs_BinariesListView(t *testing.T) {
 	}
 
 	for _, expected := range expectedStrings {
-		if !strings.Contains(result, expected) {
+		if !strings.Contains(stripANSI(result), expected) {
 			t.Errorf("renderTabs() should contain tab %q", expected)
 		}
 	}

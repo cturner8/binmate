@@ -7,7 +7,7 @@ import (
 	"cturner8/binmate/internal/database"
 	"cturner8/binmate/internal/database/repository"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func TestUpdate_WindowSizeMsg(t *testing.T) {
@@ -46,7 +46,7 @@ func TestUpdateBinariesList_NavigateUp(t *testing.T) {
 		config:        &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyUp}
+	msg := tea.KeyPressMsg{Code: tea.KeyUp}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -67,7 +67,7 @@ func TestUpdateBinariesList_NavigateUpAtTop(t *testing.T) {
 		config:        &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyUp}
+	msg := tea.KeyPressMsg{Code: tea.KeyUp}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -89,7 +89,7 @@ func TestUpdateBinariesList_NavigateDown(t *testing.T) {
 		config:        &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyDown}
+	msg := tea.KeyPressMsg{Code: tea.KeyDown}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -110,7 +110,7 @@ func TestUpdateBinariesList_NavigateDownAtBottom(t *testing.T) {
 		config:        &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyDown}
+	msg := tea.KeyPressMsg{Code: tea.KeyDown}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -132,7 +132,7 @@ func TestUpdateBinariesList_EnterViewVersions(t *testing.T) {
 		config:        &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyEnter}
+	msg := tea.KeyPressMsg{Code: tea.KeyEnter}
 	updatedModel, cmd := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -161,7 +161,7 @@ func TestUpdateBinariesList_PressAddKey(t *testing.T) {
 	m := initialModel(&repository.Service{}, &config.Config{})
 	m.currentView = viewBinariesList
 
-	msg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}
+	msg := tea.KeyPressMsg{Code: 'a', Text: "a"}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -178,7 +178,7 @@ func TestUpdateBinariesList_RemoveConfirmation(t *testing.T) {
 	}
 	m.selectedIndex = 0
 
-	msg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}}
+	msg := tea.KeyPressMsg{Code: 'r', Text: "r"}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -200,7 +200,7 @@ func TestUpdateBinariesList_RemoveConfirmYes(t *testing.T) {
 		config:           &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'y'}}
+	msg := tea.KeyPressMsg{Code: 'y', Text: "y"}
 	updatedModel, cmd := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -226,7 +226,7 @@ func TestUpdateBinariesList_RemoveConfirmCancel(t *testing.T) {
 		config:           &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyEsc}
+	msg := tea.KeyPressMsg{Code: tea.KeyEsc}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 
@@ -252,7 +252,7 @@ func TestUpdateVersions_NavigateUp(t *testing.T) {
 		config:             &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyUp}
+	msg := tea.KeyPressMsg{Code: tea.KeyUp}
 	updatedModel, _ := m.updateVersions(msg)
 	m2 := updatedModel.(model)
 
@@ -273,7 +273,7 @@ func TestUpdateVersions_NavigateDown(t *testing.T) {
 		config:             &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyDown}
+	msg := tea.KeyPressMsg{Code: tea.KeyDown}
 	updatedModel, _ := m.updateVersions(msg)
 	m2 := updatedModel.(model)
 
@@ -296,7 +296,7 @@ func TestUpdateVersions_EscapeToList(t *testing.T) {
 		config:    &config.Config{},
 	}
 
-	msg := tea.KeyMsg{Type: tea.KeyEsc}
+	msg := tea.KeyPressMsg{Code: tea.KeyEsc}
 	updatedModel, _ := m.updateVersions(msg)
 	m2 := updatedModel.(model)
 
@@ -431,7 +431,7 @@ func TestUpdateBinariesList_TabSwitch(t *testing.T) {
 	m.currentView = viewBinariesList
 
 	// Test switching to downloads with key "2"
-	msg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'2'}}
+	msg := tea.KeyPressMsg{Code: '2', Text: "2"}
 	updatedModel, _ := m.updateBinariesList(msg)
 	m2 := updatedModel.(model)
 

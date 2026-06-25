@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
 
 	binarySvc "cturner8/binmate/internal/core/binary"
 	configPkg "cturner8/binmate/internal/core/config"
@@ -898,54 +898,54 @@ func createFormInputs(parsed *parsedBinaryConfig) []textinput.Model {
 	inputs[0].Placeholder = "Binary user ID"
 	inputs[0].SetValue(parsed.userID)
 	inputs[0].CharLimit = 64
-	inputs[0].Width = 40
+	inputs[0].SetWidth(40)
 
 	// Name
 	inputs[1] = textinput.New()
 	inputs[1].Placeholder = "Binary name"
 	inputs[1].SetValue(parsed.name)
 	inputs[1].CharLimit = 64
-	inputs[1].Width = 40
+	inputs[1].SetWidth(40)
 
 	// Provider (read-only)
 	inputs[2] = textinput.New()
 	inputs[2].SetValue(parsed.provider)
 	inputs[2].CharLimit = 64
-	inputs[2].Width = 40
+	inputs[2].SetWidth(40)
 
 	// Path
 	inputs[3] = textinput.New()
 	inputs[3].Placeholder = "owner/repo"
 	inputs[3].SetValue(parsed.path)
 	inputs[3].CharLimit = 128
-	inputs[3].Width = 40
+	inputs[3].SetWidth(40)
 
 	// Format
 	inputs[4] = textinput.New()
 	inputs[4].SetValue(parsed.format)
 	inputs[4].CharLimit = 16
-	inputs[4].Width = 40
+	inputs[4].SetWidth(40)
 
 	// Install Path (optional)
 	inputs[5] = textinput.New()
 	inputs[5].Placeholder = "Optional install path"
 	inputs[5].SetValue(parsed.installPath)
 	inputs[5].CharLimit = 256
-	inputs[5].Width = 40
+	inputs[5].SetWidth(40)
 
 	// Asset Regex (optional)
 	inputs[6] = textinput.New()
 	inputs[6].Placeholder = "Optional asset regex"
 	inputs[6].SetValue(parsed.assetRegex)
 	inputs[6].CharLimit = 256
-	inputs[6].Width = 40
+	inputs[6].SetWidth(40)
 
 	// Release Regex (optional)
 	inputs[7] = textinput.New()
 	inputs[7].Placeholder = "Optional release regex"
 	inputs[7].SetValue(parsed.releaseRegex)
 	inputs[7].CharLimit = 256
-	inputs[7].Width = 40
+	inputs[7].SetWidth(40)
 
 	// Authenticated (boolean as string)
 	inputs[8] = textinput.New()
@@ -956,7 +956,7 @@ func createFormInputs(parsed *parsedBinaryConfig) []textinput.Model {
 		inputs[8].SetValue("false")
 	}
 	inputs[8].CharLimit = 5
-	inputs[8].Width = 40
+	inputs[8].SetWidth(40)
 
 	return inputs
 }

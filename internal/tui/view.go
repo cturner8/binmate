@@ -1,30 +1,36 @@
 package tui
 
-func (m model) View() string {
+import tea "charm.land/bubbletea/v2"
+
+func (m model) View() tea.View {
+	var content string
 	switch m.currentView {
 	case viewBinariesList:
-		return m.renderBinariesList()
+		content = m.renderBinariesList()
 	case viewVersions:
-		return m.renderVersions()
+		content = m.renderVersions()
 	case viewAddBinaryURL:
-		return m.renderAddBinaryURL()
+		content = m.renderAddBinaryURL()
 	case viewAddBinaryForm:
-		return m.renderAddBinaryForm()
+		content = m.renderAddBinaryForm()
 	case viewInstallBinary:
-		return m.renderInstallBinary()
+		content = m.renderInstallBinary()
 	case viewImportBinary:
-		return m.renderImportBinary()
+		content = m.renderImportBinary()
 	case viewConfiguration:
-		return m.renderConfiguration()
+		content = m.renderConfiguration()
 	case viewHelp:
-		return m.renderHelp()
+		content = m.renderHelp()
 	case viewReleaseNotes:
-		return m.renderReleaseNotes()
+		content = m.renderReleaseNotes()
 	case viewAvailableVersions:
-		return m.renderAvailableVersions()
+		content = m.renderAvailableVersions()
 	case viewRepositoryInfo:
-		return m.renderRepositoryInfo()
+		content = m.renderRepositoryInfo()
 	default:
-		return "Unknown view"
+		content = "Unknown view"
 	}
+	v := tea.NewView(content)
+	v.WindowTitle = "binmate"
+	return v
 }

@@ -5,12 +5,11 @@ import (
 	"cturner8/binmate/internal/database/repository"
 	"cturner8/binmate/internal/providers/github"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func (m model) Init() tea.Cmd {
 	cmds := []tea.Cmd{
-		tea.SetWindowTitle("binmate"),
 		loadBinaries(m.dbService),
 	}
 

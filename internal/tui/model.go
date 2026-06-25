@@ -5,7 +5,7 @@ import (
 	"cturner8/binmate/internal/database"
 	"cturner8/binmate/internal/database/repository"
 
-	"github.com/charmbracelet/bubbles/textinput"
+	"charm.land/bubbles/v2/textinput"
 )
 
 type model struct {
@@ -131,40 +131,40 @@ func initialModel(dbService *repository.Service, cfg *config.Config) model {
 	urlInput := textinput.New()
 	urlInput.Placeholder = "https://github.com/owner/repo/releases/download/v1.0.0/binary.tar.gz"
 	urlInput.CharLimit = 256
-	urlInput.Width = 80
+	urlInput.SetWidth(80)
 
 	// Create version text input for install view
 	versionInput := textinput.New()
 	versionInput.Placeholder = "latest"
 	versionInput.CharLimit = 64
-	versionInput.Width = 40
+	versionInput.SetWidth(40)
 
 	// Create text inputs for import view
 	importPathInput := textinput.New()
 	importPathInput.Placeholder = "/usr/local/bin/binary"
 	importPathInput.CharLimit = 256
-	importPathInput.Width = 60
+	importPathInput.SetWidth(60)
 
 	importNameInput := textinput.New()
 	importNameInput.Placeholder = "binary-name"
 	importNameInput.CharLimit = 64
-	importNameInput.Width = 40
+	importNameInput.SetWidth(40)
 
 	importURLInput := textinput.New()
 	importURLInput.Placeholder = "https://github.com/owner/repo/releases/download/v1.0.0/binary.tar.gz (optional)"
 	importURLInput.CharLimit = 256
-	importURLInput.Width = 80
+	importURLInput.SetWidth(80)
 
 	importVersionInput := textinput.New()
 	importVersionInput.Placeholder = "v1.0.0 (optional, auto-extracted from URL)"
 	importVersionInput.CharLimit = 64
-	importVersionInput.Width = 50
+	importVersionInput.SetWidth(50)
 
 	// Create search text input
 	searchInput := textinput.New()
 	searchInput.Placeholder = "Search by name (regex supported)..."
 	searchInput.CharLimit = 128
-	searchInput.Width = 60
+	searchInput.SetWidth(60)
 
 	return model{
 		dbService:           dbService,
