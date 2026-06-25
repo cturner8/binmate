@@ -109,6 +109,11 @@
           "description": "Display name of the binary",
           "minLength": 1
         },
+        "alias": {
+          "type": "string",
+          "description": "Alias for the binary",
+          "minLength": 1
+        },
         "provider": {
           "type": "string",
           "description": "Source provider for the binary",
