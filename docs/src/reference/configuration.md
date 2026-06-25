@@ -47,6 +47,7 @@ Each entry in the `binaries` array describes a single binary.
 | --------------- | ------- | -------- | ---------------------------------------------------------------- |
 | `id`            | string  | Yes      | Unique identifier for the binary.                                |
 | `name`          | string  | Yes      | Display name of the binary.                                      |
+| `alias`          | string  | No      | Alias of the binary.                                      |
 | `provider`      | string  | Yes      | Provider type (currently only `github` is supported).            |
 | `path`          | string  | Yes      | Repository path (e.g. `owner/repo`).                             |
 | `format`        | string  | Yes      | Archive format (`.tar.gz`, `.zip`, `raw`).                      |
