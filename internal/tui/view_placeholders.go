@@ -93,8 +93,8 @@ func (m model) renderConfiguration() string {
 	if m.config != nil {
 		b.WriteString(fmt.Sprintf("Version: %d\n", m.config.Version))
 		b.WriteString(fmt.Sprintf("Binaries in config: %d\n", len(m.config.Binaries)))
-		if m.config.DateFormat != "" {
-			b.WriteString(fmt.Sprintf("Date Format: %s\n", m.config.DateFormat))
+		if m.config.TUI.DateFormat != "" {
+			b.WriteString(fmt.Sprintf("Date Format: %s\n", m.config.TUI.DateFormat))
 		}
 		if m.config.LogLevel != "" {
 			b.WriteString(fmt.Sprintf("Log Level: %s\n", m.config.LogLevel))

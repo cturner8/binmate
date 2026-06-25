@@ -107,7 +107,7 @@ calls for that binary should always use an authenticated client:
 
 ### `askpassMode`
 
-The `askpassMode` option under `global.providers.github` controls when the askpass
+The `askpassMode` option under `tui` controls when the askpass
 script is invoked during TUI sessions:
 
 | Value | Behaviour |
@@ -119,13 +119,8 @@ script is invoked during TUI sessions:
 {
   "$schema": "https://binmate.cturner8.dev/schema.json",
   "version": 1,
-  "global": {
-    "providers": {
-      "github": {
-        "authenticated": true,
-        "askpassMode": "startup"
-      }
-    }
+  "tui": {
+    "askpassMode": "startup"
   },
   "binaries": []
 }

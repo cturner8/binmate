@@ -2,6 +2,7 @@ package github
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -39,30 +40,38 @@ func resolveAskpass(scriptPath string) (string, error) {
 //
 // Returns the first non-empty token found, or an empty string if none is set.
 func ResolveToken() (string, error) {
+	log.Println("Attempting to resolve GitHub authentication token...")
 	if script := os.Getenv("BINMATE_GITHUB_ASKPASS"); script != "" {
+		log.Printf("Using BINMATE_GITHUB_ASKPASS script: %s", script)
 		token, err := resolveAskpass(script)
 		if err != nil {
+			log.Printf("Failed to resolve token using BINMATE_GITHUB_ASKPASS script: %v", err)
 			return "", err
 		}
 		return token, nil
 	}
 
 	if script := os.Getenv("GITHUB_ASKPASS"); script != "" {
+		log.Printf("Using GITHUB_ASKPASS script: %s", script)
 		token, err := resolveAskpass(script)
 		if err != nil {
+			log.Printf("Failed to resolve token using GITHUB_ASKPASS script: %v", err)
 			return "", err
 		}
 		return token, nil
 	}
 
 	if token := os.Getenv("BINMATE_GITHUB_TOKEN"); token != "" {
+		log.Println("Using BINMATE_GITHUB_TOKEN environment variable")
 		return token, nil
 	}
 
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		log.Println("Using GITHUB_TOKEN environment variable")
 		return token, nil
 	}
 
+	log.Println("No GitHub authentication token found")
 	return "", nil
 }
 

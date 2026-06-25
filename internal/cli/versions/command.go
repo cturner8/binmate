@@ -46,8 +46,8 @@ Example:
 
 			// Get date format from config or use default
 			dateFormat := ""
-			if Config != nil && Config.DateFormat != "" {
-				dateFormat = Config.DateFormat
+			if Config != nil && Config.TUI.DateFormat != "" {
+				dateFormat = Config.TUI.DateFormat
 			}
 
 			for _, v := range versions {

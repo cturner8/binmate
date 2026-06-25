@@ -33,6 +33,9 @@ func ReadConfig(flags ConfigFlags) Config {
 		InstallPath: "",
 		Providers:   map[string]ProviderDefaults{},
 	})
+	v.SetDefault("tui", TUIConfig{
+		AskpassMode: "startup",
+	})
 
 	homeDir, _ := os.UserConfigDir()
 
@@ -42,7 +45,7 @@ func ReadConfig(flags ConfigFlags) Config {
 		v.SetConfigFile(envConfigPath)
 	} else {
 		// Add search paths to find the file
-		v.AddConfigPath(fmt.Sprintf("%s/.binmate", homeDir))
+		v.AddConfigPath(fmt.Sprintf("%s/binmate", homeDir))
 	}
 
 	// Find and read the config file
@@ -54,6 +57,10 @@ func ReadConfig(flags ConfigFlags) Config {
 	err := v.Unmarshal(&config)
 	if err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
+	}
+
+	if config.TUI.AskpassMode == "" {
+		config.TUI.AskpassMode = "startup"
 	}
 
 	return config
