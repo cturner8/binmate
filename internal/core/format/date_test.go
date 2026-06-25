@@ -1,7 +1,6 @@
 package format
 
 import (
-	"os"
 	"testing"
 	"time"
 )
@@ -158,42 +157,25 @@ func TestIsUSTimezone(t *testing.T) {
 }
 
 func TestGetLocaleFromEnv(t *testing.T) {
-	// Save original env vars
-	origLCTime := os.Getenv("LC_TIME")
-	origLCAll := os.Getenv("LC_ALL")
-	origLang := os.Getenv("LANG")
-
-	defer func() {
-		// Restore original env vars
-		os.Setenv("LC_TIME", origLCTime)
-		os.Setenv("LC_ALL", origLCAll)
-		os.Setenv("LANG", origLang)
-	}()
-
-	// Clear all locale env vars
-	os.Unsetenv("LC_TIME")
-	os.Unsetenv("LC_ALL")
-	os.Unsetenv("LANG")
-
 	// Test empty case
 	if got := getLocaleFromEnv(); got != "" {
 		t.Errorf("getLocaleFromEnv() with no env vars = %q, want empty string", got)
 	}
 
 	// Test LANG
-	os.Setenv("LANG", "en_US.UTF-8")
+	t.Setenv("LANG", "en_US.UTF-8")
 	if got := getLocaleFromEnv(); got != "en_US.UTF-8" {
 		t.Errorf("getLocaleFromEnv() with LANG = %q, want %q", got, "en_US.UTF-8")
 	}
 
 	// Test LC_ALL takes precedence
-	os.Setenv("LC_ALL", "en_GB.UTF-8")
+	t.Setenv("LC_ALL", "en_GB.UTF-8")
 	if got := getLocaleFromEnv(); got != "en_GB.UTF-8" {
 		t.Errorf("getLocaleFromEnv() with LC_ALL = %q, want %q", got, "en_GB.UTF-8")
 	}
 
 	// Test LC_TIME takes precedence
-	os.Setenv("LC_TIME", "de_DE.UTF-8")
+	t.Setenv("LC_TIME", "de_DE.UTF-8")
 	if got := getLocaleFromEnv(); got != "de_DE.UTF-8" {
 		t.Errorf("getLocaleFromEnv() with LC_TIME = %q, want %q", got, "de_DE.UTF-8")
 	}
