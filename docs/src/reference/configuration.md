@@ -30,6 +30,15 @@ Global settings apply to all binaries unless overridden on an individual binary.
 | `global.providers.<provider>.authenticated`     | boolean | Default authentication setting for a provider.                                    |
 | `global.providers.<provider>.askpassMode`       | string  | When to invoke the askpass script in the TUI: `"startup"` (default) or `"always"`. |
 
+## TUI configuration
+
+Optional configuration for interactive mode.
+
+| Field                                           | Type    | Description                                                                       |
+| ----------------------------------------------- | ------- | --------------------------------------------------------------------------------- |
+| `tui.askpassMode`       | string  | When to invoke the askpass script in the TUI: `"startup"` (default) or `"always"`. |
+| `tui.dateFormat`       | string  | Display format to use for date display. When omitted, uses the system date.   |
+
 ## Binary configuration
 
 Each entry in the `binaries` array describes a single binary.
@@ -70,6 +79,10 @@ Use format `raw` when an application distributes raw uncompressed binaries in re
         "authenticated": true
       }
     }
+  },
+  "tui": {
+    "askpassMode": "always",
+    "dateFormat": "02/01/2006 15:04"
   },
   "binaries": [
     {
