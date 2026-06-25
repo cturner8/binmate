@@ -61,7 +61,7 @@ Examples:
 						continue
 					}
 
-					client, err := github.NewClientForBinary(binaryConfig)
+					client, err := github.NewClientForBinary(binaryConfig.Authenticated, Config.Global.Providers["github"].Authenticated)
 					if err != nil {
 						fmt.Fprintf(cmd.OutOrStdout(), "⚠ Failed to check %s: %v\n", b.Binary.Name, err)
 						continue
@@ -102,7 +102,7 @@ Examples:
 				return fmt.Errorf("only github provider is currently supported")
 			}
 
-			client, err := github.NewClientForBinary(binaryConfig)
+			client, err := github.NewClientForBinary(binaryConfig.Authenticated, Config.Global.Providers["github"].Authenticated)
 			if err != nil {
 				return fmt.Errorf("failed to create HTTP client: %w", err)
 			}

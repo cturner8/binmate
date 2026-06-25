@@ -2,12 +2,11 @@ package github
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"strings"
-
-	"cturner8/binmate/internal/database"
 )
 
 // resolveAskpass executes the given askpass script and returns the token it prints.
@@ -39,30 +38,38 @@ func resolveAskpass(scriptPath string) (string, error) {
 //
 // Returns the first non-empty token found, or an empty string if none is set.
 func ResolveToken() (string, error) {
+	log.Println("Attempting to resolve GitHub authentication token...")
 	if script := os.Getenv("BINMATE_GITHUB_ASKPASS"); script != "" {
+		log.Printf("Using BINMATE_GITHUB_ASKPASS script: %s", script)
 		token, err := resolveAskpass(script)
 		if err != nil {
+			log.Printf("Failed to resolve token using BINMATE_GITHUB_ASKPASS script: %v", err)
 			return "", err
 		}
 		return token, nil
 	}
 
 	if script := os.Getenv("GITHUB_ASKPASS"); script != "" {
+		log.Printf("Using GITHUB_ASKPASS script: %s", script)
 		token, err := resolveAskpass(script)
 		if err != nil {
+			log.Printf("Failed to resolve token using GITHUB_ASKPASS script: %v", err)
 			return "", err
 		}
 		return token, nil
 	}
 
 	if token := os.Getenv("BINMATE_GITHUB_TOKEN"); token != "" {
+		log.Println("Using BINMATE_GITHUB_TOKEN environment variable")
 		return token, nil
 	}
 
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		log.Println("Using GITHUB_TOKEN environment variable")
 		return token, nil
 	}
 
+	log.Println("No GitHub authentication token found")
 	return "", nil
 }
 
@@ -72,6 +79,7 @@ func CreateHTTPClient(token string) (*http.Client, error) {
 	client := &http.Client{}
 
 	if token == "" {
+		log.Println("Skipping GitHub authentication")
 		return client, nil
 	}
 
@@ -84,12 +92,19 @@ func CreateHTTPClient(token string) (*http.Client, error) {
 	return client, nil
 }
 
+// BinaryRequiresAuthentication determines if authentication is required for a binary.
+func BinaryRequiresAuthentication(binaryAuthenticated bool, globalAuthenticated bool) bool {
+	return binaryAuthenticated || globalAuthenticated
+}
+
 // NewClientForBinary creates an HTTP client appropriate for the given binary.
 // If the binary does not require authentication a plain client is returned.
 // If authentication is required, ResolveToken is called; an error is returned
 // if no token can be resolved.
-func NewClientForBinary(binary *database.Binary) (*http.Client, error) {
-	if !binary.Authenticated {
+func NewClientForBinary(binaryAuthenticated bool, globalAuthenticated bool) (*http.Client, error) {
+	authenticationRequired := BinaryRequiresAuthentication(binaryAuthenticated, globalAuthenticated)
+	if !authenticationRequired {
+		log.Println("Skipping GitHub authentication, not configured for authentication")
 		return &http.Client{}, nil
 	}
 
@@ -99,7 +114,7 @@ func NewClientForBinary(binary *database.Binary) (*http.Client, error) {
 	}
 
 	if token == "" {
-		return nil, fmt.Errorf("authentication required for binary %q but no GitHub token found; set an askpass script or static token in your environment", binary.Name)
+		return nil, fmt.Errorf("authentication required for binary but no GitHub token found; set an askpass script or static token in your environment")
 	}
 
 	return CreateHTTPClient(token)

@@ -9,6 +9,7 @@ import (
 	"cturner8/binmate/internal/core/config"
 	installSvc "cturner8/binmate/internal/core/install"
 	"cturner8/binmate/internal/database/repository"
+	"cturner8/binmate/internal/providers/github"
 )
 
 // Package variables will be set by cmd package
@@ -50,7 +51,12 @@ Examples:
 
 				updatedCount := 0
 				for _, b := range binaries {
-					result, err := installSvc.UpdateToLatest(b.Binary.UserID, DBService)
+					client, err := github.NewClientForBinary(b.Binary.Authenticated, Config.Global.Providers["github"].Authenticated)
+					if err != nil {
+						return fmt.Errorf("failed to create HTTP client: %w", err)
+					}
+
+					result, err := installSvc.UpdateToLatest(b.Binary.UserID, DBService, client)
 					if err != nil {
 						fmt.Fprintf(cmd.OutOrStdout(), "⚠ Failed to update %s: %v\n", b.Binary.Name, err)
 						continue
@@ -63,8 +69,13 @@ Examples:
 				return nil
 			}
 
+			client, err := github.NewClientForBinary(b.Binary.Authenticated, Config.Global.Providers["github"].Authenticated)
+			if err != nil {
+				return fmt.Errorf("failed to create HTTP client: %w", err)
+			}
+
 			// Update single binary
-			result, err := installSvc.UpdateToLatest(binaryID, DBService)
+			result, err := installSvc.UpdateToLatest(binaryID, DBService, client)
 			if err != nil {
 				return fmt.Errorf("failed to update binary: %w", err)
 			}

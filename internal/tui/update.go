@@ -9,6 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	binarySvc "cturner8/binmate/internal/core/binary"
+	"cturner8/binmate/internal/core/config"
 	configPkg "cturner8/binmate/internal/core/config"
 	"cturner8/binmate/internal/core/crypto"
 	installSvc "cturner8/binmate/internal/core/install"
@@ -597,7 +598,7 @@ func (m model) updateBinariesList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.errorMessage = ""
 			m.successMessage = ""
 			m.loading = true
-			return m, checkForUpdates(m.dbService, selectedBinary.Binary.UserID)
+			return m, checkForUpdates(m.dbService, selectedBinary.Binary.UserID, m.config)
 		}
 
 	case keyImport:
@@ -704,7 +705,7 @@ func (m model) updateVersions(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.errorMessage = ""
 			m.successMessage = ""
 			m.loading = true
-			return m, checkForUpdates(m.dbService, m.selectedBinary.UserID)
+			return m, checkForUpdates(m.dbService, m.selectedBinary.UserID, m.config)
 		}
 
 	case keyDelete, keyDelete2:
@@ -1172,6 +1173,11 @@ func (m model) updateInstallBinary(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 // installBinary installs a binary version
 func installBinary(dbService *repository.Service, binaryID string, version string) tea.Cmd {
 	return func() tea.Msg {
+		client, err := github.NewClientForBinary(b.Binary.Authenticated, Config.Global.Providers["github"].Authenticated)
+		if err != nil {
+			return fmt.Errorf("failed to create HTTP client: %w", err)
+		}
+
 		// Use the install service to install the binary
 		result, err := installSvc.InstallBinary(binaryID, version, dbService)
 		if err != nil {
@@ -1285,7 +1291,7 @@ func importBinaryWithOptions(dbService *repository.Service, path string, name st
 }
 
 // checkForUpdates checks if updates are available for a binary
-func checkForUpdates(dbService *repository.Service, binaryID string) tea.Cmd {
+func checkForUpdates(dbService *repository.Service, binaryID string, config *config.Config) tea.Cmd {
 	return func() tea.Msg {
 		// Get the binary configuration
 		binaryConfig, err := dbService.Binaries.GetByUserID(binaryID)
@@ -1304,7 +1310,7 @@ func checkForUpdates(dbService *repository.Service, binaryID string) tea.Cmd {
 		}
 
 		// Create HTTP client for this binary (authenticated if required)
-		client, err := github.NewClientForBinary(binaryConfig)
+		client, err := github.NewClientForBinary(binaryConfig.Authenticated, config.Global.Providers["github"].Authenticated)
 		if err != nil {
 			return updateCheckMsg{
 				binaryID: binaryID,
@@ -1583,7 +1589,8 @@ type githubRepoStarredMsg struct {
 // startup resolution is still pending) NewClientForBinary is called to resolve
 // fresh credentials.
 func (m model) clientForBinary(binary *database.Binary) (*http.Client, error) {
-	if !binary.Authenticated {
+	authenticationRequired := github.BinaryRequiresAuthentication(binary.Authenticated, m.config.Global.Providers["github"].Authenticated)
+	if !authenticationRequired {
 		return &http.Client{}, nil
 	}
 
@@ -1591,7 +1598,7 @@ func (m model) clientForBinary(binary *database.Binary) (*http.Client, error) {
 		return github.CreateHTTPClient(m.resolvedGithubToken)
 	}
 
-	return github.NewClientForBinary(binary)
+	return github.NewClientForBinary(binary.Authenticated, m.config.Global.Providers["github"].Authenticated)
 }
 
 // starRepository stars a GitHub repository for the authenticated user.

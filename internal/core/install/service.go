@@ -3,6 +3,7 @@ package install
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -21,7 +22,7 @@ type InstallBinaryResult struct {
 }
 
 // InstallBinary installs a specific version of a binary
-func InstallBinary(binaryID string, version string, dbService *repository.Service) (*InstallBinaryResult, error) {
+func InstallBinary(binaryID string, version string, dbService *repository.Service, client *http.Client) (*InstallBinaryResult, error) {
 	// Get the binary configuration
 	binaryConfig, err := dbService.Binaries.GetByUserID(binaryID)
 	if err != nil {
@@ -30,12 +31,6 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 
 	if binaryConfig.Provider != "github" {
 		return nil, fmt.Errorf("only github provider is currently supported")
-	}
-
-	// Create HTTP client for this binary (authenticated if required)
-	client, err := github.NewClientForBinary(binaryConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create HTTP client: %w", err)
 	}
 
 	// Fetch release and asset information
@@ -161,6 +156,6 @@ func InstallBinary(binaryID string, version string, dbService *repository.Servic
 }
 
 // UpdateToLatest updates a binary to the latest available version
-func UpdateToLatest(binaryID string, dbService *repository.Service) (*InstallBinaryResult, error) {
-	return InstallBinary(binaryID, "latest", dbService)
+func UpdateToLatest(binaryID string, dbService *repository.Service, client *http.Client) (*InstallBinaryResult, error) {
+	return InstallBinary(binaryID, "latest", dbService, client)
 }

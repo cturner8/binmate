@@ -216,7 +216,7 @@ func TestNewClientForBinary(t *testing.T) {
 	t.Run("unauthenticated binary returns plain client", func(t *testing.T) {
 		clearAuthEnv(t)
 		binary := &database.Binary{Authenticated: false, Name: "test"}
-		client, err := NewClientForBinary(binary)
+		client, err := NewClientForBinary(binary, false)
 		if err != nil {
 			t.Fatalf("NewClientForBinary() unexpected error: %v", err)
 		}
@@ -240,7 +240,33 @@ func TestNewClientForBinary(t *testing.T) {
 		defer srv.Close()
 
 		binary := &database.Binary{Authenticated: true, Name: "test"}
-		client, err := NewClientForBinary(binary)
+		client, err := NewClientForBinary(binary, false)
+		if err != nil {
+			t.Fatalf("NewClientForBinary() unexpected error: %v", err)
+		}
+
+		if _, err := client.Get(srv.URL); err != nil {
+			t.Fatalf("client.Get() unexpected error: %v", err)
+		}
+
+		if receivedAuth != "Bearer my-token" {
+			t.Errorf("Authorization header = %q, want %q", receivedAuth, "Bearer my-token")
+		}
+	})
+
+	t.Run("returns authenticated client when binary is not configured for authentication but global provider authentication is enabled", func(t *testing.T) {
+		clearAuthEnv(t)
+		t.Setenv("BINMATE_GITHUB_TOKEN", "my-token")
+
+		var receivedAuth string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			receivedAuth = r.Header.Get("Authorization")
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		binary := &database.Binary{Authenticated: false, Name: "test"}
+		client, err := NewClientForBinary(binary, true)
 		if err != nil {
 			t.Fatalf("NewClientForBinary() unexpected error: %v", err)
 		}
@@ -257,7 +283,7 @@ func TestNewClientForBinary(t *testing.T) {
 	t.Run("authenticated binary with no token returns error", func(t *testing.T) {
 		clearAuthEnv(t)
 		binary := &database.Binary{Authenticated: true, Name: "test"}
-		_, err := NewClientForBinary(binary)
+		_, err := NewClientForBinary(binary, false)
 		if err == nil {
 			t.Fatal("NewClientForBinary() expected error when no token set, got nil")
 		}

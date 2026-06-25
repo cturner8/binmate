@@ -1,6 +1,13 @@
 {
   "$schema": "./docs/src/public/schema.json",
   "version": 1,
+  "global": {
+    "providers": {
+      "github": {
+        "authenticated": true
+      }
+    }
+  },
   "binaries": [
     {
       "id": "ghcp",

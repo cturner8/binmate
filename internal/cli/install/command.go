@@ -8,7 +8,9 @@ import (
 
 	"cturner8/binmate/internal/core/config"
 	installSvc "cturner8/binmate/internal/core/install"
+	"cturner8/binmate/internal/database"
 	"cturner8/binmate/internal/database/repository"
+	"cturner8/binmate/internal/providers/github"
 )
 
 // Package variable will be set by cmd package
@@ -19,8 +21,9 @@ var (
 
 func NewCommand() *cobra.Command {
 	var (
-		binary  string
-		version string
+		binary       string
+		version      string
+		binaryConfig *database.Binary
 	)
 
 	cmd := &cobra.Command{
@@ -40,6 +43,8 @@ func NewCommand() *cobra.Command {
 				}
 			}
 
+			binaryConfig = existingBinary
+
 			// try to sync from config
 			if err := config.SyncBinary(binary, *Config, DBService); err != nil {
 				return fmt.Errorf("binary '%s' not found in database or config: %w", binary, err)
@@ -58,8 +63,13 @@ func NewCommand() *cobra.Command {
 
 			DBService.Logs.LogEntity(id, binary, version)
 
+			client, err := github.NewClientForBinary(binaryConfig.Authenticated, Config.Global.Providers["github"].Authenticated)
+			if err != nil {
+				return fmt.Errorf("failed to create HTTP client: %w", err)
+			}
+
 			// Use the service layer to install the binary
-			result, err := installSvc.InstallBinary(binary, version, DBService)
+			result, err := installSvc.InstallBinary(binary, version, DBService, client)
 			if err != nil {
 				msg := "installation failed"
 				DBService.Logs.LogFailure(id, msg, int64(time.Since(start)))

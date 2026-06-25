@@ -42,7 +42,7 @@ func ReadConfig(flags ConfigFlags) Config {
 		v.SetConfigFile(envConfigPath)
 	} else {
 		// Add search paths to find the file
-		v.AddConfigPath(fmt.Sprintf("%s/.binmate", homeDir))
+		v.AddConfigPath(fmt.Sprintf("%s/binmate", homeDir))
 	}
 
 	// Find and read the config file
