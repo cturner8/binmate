@@ -38,6 +38,26 @@
       },
       "additionalProperties": false
     },
+    "tui": {
+      "type": "object",
+      "description": "Configuration for the interactive (TUI) mode",
+      "properties": {
+          "dateFormat": {
+            "type": "string",
+            "description": "Date format to use in the date displays (e.g., \"2006-01-02 15:04:05\")"
+          },
+          "askpassMode": {
+            "type": "string",
+            "enum": [
+              "startup",
+              "always"
+            ],
+            "default": "startup",
+            "description": "Controls when the askpass script is invoked. \"startup\" (default) resolves the token once when binmate starts. \"always\" invokes the askpass script before each API call that requires authentication."
+          }
+      },
+      "additionalProperties": false
+    },
     "binaries": {
       "type": "array",
       "description": "List of binaries to install and manage",
@@ -64,15 +84,6 @@
         "authenticated": {
           "type": "boolean",
           "description": "Whether to use authentication for API calls to this provider"
-        },
-        "askpassMode": {
-          "type": "string",
-          "enum": [
-            "startup",
-            "always"
-          ],
-          "default": "startup",
-          "description": "Controls when the askpass script is invoked in interactive (TUI) mode. \"startup\" (default) resolves the token once when binmate starts. \"always\" invokes the askpass script before each GitHub API call."
         }
       },
       "additionalProperties": false
