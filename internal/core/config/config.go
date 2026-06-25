@@ -20,15 +20,20 @@ type GlobalConfig struct {
 	Providers   map[string]ProviderDefaults `mapstructure:"providers"`   // Provider-specific defaults (e.g., github.authenticated)
 }
 
+type TUIConfig struct {
+	AskpassMode string `mapstructure:"askpassMode"` // When to invoke askpass: "startup" (default) or "always"
+	DateFormat  string `mapstructure:"dateFormat"`  // Date format for display, e.g., "02/01/2006 15:04"
+}
+
 // ProviderDefaults represents provider-level configuration defaults
 type ProviderDefaults struct {
 	Authenticated bool `mapstructure:"authenticated"` // Whether to use authentication for API calls
 }
 
 type Config struct {
-	Version    int          `mapstructure:"version"`
-	Global     GlobalConfig `mapstructure:"global"` // Global configuration defaults
-	Binaries   []Binary     `mapstructure:"binaries"`
-	DateFormat string       `mapstructure:"dateFormat"` // Date format for display, e.g., "02/01/2006 15:04"
-	LogLevel   string       `mapstructure:"logLevel"`
+	Version  int          `mapstructure:"version"`
+	Global   GlobalConfig `mapstructure:"global"` // Global configuration defaults
+	TUI      TUIConfig    `mapstructure:"tui"`    // TUI configuration
+	Binaries []Binary     `mapstructure:"binaries"`
+	LogLevel string       `mapstructure:"logLevel"`
 }

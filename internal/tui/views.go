@@ -10,7 +10,6 @@ const (
 	viewAddBinaryForm
 	viewInstallBinary
 	viewImportBinary
-	viewDownloads
 	viewConfiguration
 	viewHelp
 	viewReleaseNotes
@@ -33,8 +32,6 @@ func (v viewState) String() string {
 		return "Install Binary"
 	case viewImportBinary:
 		return "Import Binary"
-	case viewDownloads:
-		return "Downloads"
 	case viewConfiguration:
 		return "Configuration"
 	case viewHelp:

@@ -34,7 +34,7 @@ type RepositoryInfo struct {
 }
 
 // FetchReleaseNotes fetches the release notes for a specific version
-func FetchReleaseNotes(binary *database.Binary, version string) (ReleaseInfo, error) {
+func FetchReleaseNotes(client *http.Client, binary *database.Binary, version string) (ReleaseInfo, error) {
 	if binary.ProviderPath == "" {
 		return ReleaseInfo{}, fmt.Errorf("path is required for binary config")
 	}
@@ -53,13 +53,6 @@ func FetchReleaseNotes(binary *database.Binary, version string) (ReleaseInfo, er
 	}
 
 	req.Header.Set("Accept", "application/vnd.github+json")
-
-	// Create HTTP client with optional authentication
-	client, err := CreateHTTPClient(binary.Authenticated)
-	if err != nil {
-		// If authentication fails, fall back to unauthenticated
-		client = &http.Client{}
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -81,7 +74,7 @@ func FetchReleaseNotes(binary *database.Binary, version string) (ReleaseInfo, er
 }
 
 // ListAvailableVersions fetches all available release versions for a binary
-func ListAvailableVersions(binary *database.Binary, limit int) ([]ReleaseInfo, error) {
+func ListAvailableVersions(client *http.Client, binary *database.Binary, limit int) ([]ReleaseInfo, error) {
 	if binary.ProviderPath == "" {
 		return nil, fmt.Errorf("path is required for binary config")
 	}
@@ -98,13 +91,6 @@ func ListAvailableVersions(binary *database.Binary, limit int) ([]ReleaseInfo, e
 	}
 
 	req.Header.Set("Accept", "application/vnd.github+json")
-
-	// Create HTTP client with optional authentication
-	client, err := CreateHTTPClient(binary.Authenticated)
-	if err != nil {
-		// If authentication fails, fall back to unauthenticated
-		client = &http.Client{}
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -139,7 +125,7 @@ func ListAvailableVersions(binary *database.Binary, limit int) ([]ReleaseInfo, e
 }
 
 // GetRepositoryInfo fetches basic repository information
-func GetRepositoryInfo(binary *database.Binary) (RepositoryInfo, error) {
+func GetRepositoryInfo(client *http.Client, binary *database.Binary) (RepositoryInfo, error) {
 	if binary.ProviderPath == "" {
 		return RepositoryInfo{}, fmt.Errorf("path is required for binary config")
 	}
@@ -152,13 +138,6 @@ func GetRepositoryInfo(binary *database.Binary) (RepositoryInfo, error) {
 	}
 
 	req.Header.Set("Accept", "application/vnd.github+json")
-
-	// Create HTTP client with optional authentication
-	client, err := CreateHTTPClient(binary.Authenticated)
-	if err != nil {
-		// If authentication fails, fall back to unauthenticated
-		client = &http.Client{}
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -180,7 +159,7 @@ func GetRepositoryInfo(binary *database.Binary) (RepositoryInfo, error) {
 }
 
 // StarRepository stars the configured repository for the authenticated GitHub user.
-func StarRepository(binary *database.Binary) error {
+func StarRepository(client *http.Client, binary *database.Binary) error {
 	if binary.ProviderPath == "" {
 		return fmt.Errorf("path is required for binary config")
 	}
@@ -197,10 +176,6 @@ func StarRepository(binary *database.Binary) error {
 	}
 
 	req.Header.Set("Accept", "application/vnd.github+json")
-	client, err := CreateHTTPClient(true)
-	if err != nil {
-		return fmt.Errorf("failed to create authenticated HTTP client: %w", err)
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {

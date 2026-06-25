@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -209,6 +210,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.successMessage = ""
 		return m, nil
 
+	case githubTokenResolvedMsg:
+		m.githubTokenResolved = true
+		if msg.err == nil {
+			m.resolvedGithubToken = msg.token
+		}
+		// Token resolution errors are silent; per-call resolution will surface them when needed.
+		return m, nil
+
 	case githubRepoInfoMsg:
 		m.githubLoading = false
 		if msg.err != nil {
@@ -261,8 +270,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updateInstallBinary(msg)
 		case viewImportBinary:
 			return m.updateImportBinary(msg)
-		case viewDownloads:
-			return m.updatePlaceholderView(msg)
 		case viewConfiguration:
 			return m.updatePlaceholderView(msg)
 		case viewHelp:
@@ -724,29 +731,44 @@ func (m model) updateVersions(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			if len(m.installations) > 0 && m.selectedVersionIdx < len(m.installations) {
 				version = m.installations[m.selectedVersionIdx].Version
 			}
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
 			m.currentView = viewReleaseNotes
 			m.githubLoading = true
 			m.githubError = ""
-			return m, fetchReleaseNotes(m.selectedBinary, version, getDateFormat(m.config))
+			return m, fetchReleaseNotes(client, m.selectedBinary, version, getDateFormat(m.config))
 		}
 
 	case keyRepoInfo:
 		// View GitHub repository information
 		if m.selectedBinary != nil && m.selectedBinary.Provider == "github" {
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
 			m.currentView = viewRepositoryInfo
 			m.githubLoading = true
 			m.githubError = ""
-			return m, fetchRepositoryInfo(m.selectedBinary)
+			return m, fetchRepositoryInfo(client, m.selectedBinary)
 		}
 
 	case keyAvailVersions:
 		// View available versions from GitHub
 		if m.selectedBinary != nil && m.selectedBinary.Provider == "github" {
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
 			m.currentView = viewAvailableVersions
 			m.selectedAvailableVersionIdx = 0
 			m.githubLoading = true
 			m.githubError = ""
-			return m, fetchAvailableVersions(m.selectedBinary, getDateFormat(m.config))
+			return m, fetchAvailableVersions(client, m.selectedBinary, getDateFormat(m.config))
 		}
 
 	case keyEsc:
@@ -1281,9 +1303,17 @@ func checkForUpdates(dbService *repository.Service, binaryID string) tea.Cmd {
 			}
 		}
 
-		// Import github provider
+		// Create HTTP client for this binary (authenticated if required)
+		client, err := github.NewClientForBinary(binaryConfig)
+		if err != nil {
+			return updateCheckMsg{
+				binaryID: binaryID,
+				err:      fmt.Errorf("failed to create HTTP client: %w", err),
+			}
+		}
+
 		// Fetch latest release
-		release, _, err := github.FetchReleaseAsset(binaryConfig, "latest")
+		release, _, err := github.FetchReleaseAsset(client, binaryConfig, "latest")
 		if err != nil {
 			return updateCheckMsg{
 				binaryID: binaryID,
@@ -1473,19 +1503,29 @@ func (m model) updateGitHubView(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			len(m.githubAvailableVers) > 0 &&
 			m.selectedAvailableVersionIdx < len(m.githubAvailableVers) {
 			selectedRelease := m.githubAvailableVers[m.selectedAvailableVersionIdx]
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
 			m.currentView = viewReleaseNotes
 			m.githubLoading = true
 			m.githubError = ""
 			m.githubReleaseInfo = nil
-			return m, fetchReleaseNotes(m.selectedBinary, selectedRelease.TagName, getDateFormat(m.config))
+			return m, fetchReleaseNotes(client, m.selectedBinary, selectedRelease.TagName, getDateFormat(m.config))
 		}
 		return m, nil
 
 	case keySwitch:
 		if m.currentView == viewRepositoryInfo && m.selectedBinary != nil && m.selectedBinary.Provider == "github" {
+			client, err := m.clientForBinary(m.selectedBinary)
+			if err != nil {
+				m.githubError = err.Error()
+				return m, nil
+			}
 			m.errorMessage = ""
 			m.successMessage = ""
-			return m, starRepository(m.selectedBinary)
+			return m, starRepository(client, m.selectedBinary)
 		}
 		return m, nil
 
@@ -1534,10 +1574,30 @@ type githubRepoStarredMsg struct {
 	err error
 }
 
+// clientForBinary returns an *http.Client suitable for making GitHub API calls
+// on behalf of the given binary.
+//
+// When the TUI has already resolved a token at startup (githubTokenResolved is
+// true), that cached token is used directly — avoiding a repeated askpass
+// invocation for each call. Otherwise (e.g. askpassMode == "always", or
+// startup resolution is still pending) NewClientForBinary is called to resolve
+// fresh credentials.
+func (m model) clientForBinary(binary *database.Binary) (*http.Client, error) {
+	if !binary.Authenticated {
+		return &http.Client{}, nil
+	}
+
+	if m.githubTokenResolved {
+		return github.CreateHTTPClient(m.resolvedGithubToken)
+	}
+
+	return github.NewClientForBinary(binary)
+}
+
 // starRepository stars a GitHub repository for the authenticated user.
-func starRepository(binary *database.Binary) tea.Cmd {
+func starRepository(client *http.Client, binary *database.Binary) tea.Cmd {
 	return func() tea.Msg {
-		if err := github.StarRepository(binary); err != nil {
+		if err := github.StarRepository(client, binary); err != nil {
 			return githubRepoStarredMsg{err: fmt.Errorf("failed to star repository: %w", err)}
 		}
 		return githubRepoStarredMsg{err: nil}
@@ -1545,9 +1605,9 @@ func starRepository(binary *database.Binary) tea.Cmd {
 }
 
 // fetchRepositoryInfo fetches repository information from GitHub
-func fetchRepositoryInfo(binary *database.Binary) tea.Cmd {
+func fetchRepositoryInfo(client *http.Client, binary *database.Binary) tea.Cmd {
 	return func() tea.Msg {
-		repoInfo, err := github.GetRepositoryInfo(binary)
+		repoInfo, err := github.GetRepositoryInfo(client, binary)
 		if err != nil {
 			return githubRepoInfoMsg{err: err}
 		}
@@ -1566,9 +1626,9 @@ func fetchRepositoryInfo(binary *database.Binary) tea.Cmd {
 }
 
 // fetchAvailableVersions fetches available versions from GitHub
-func fetchAvailableVersions(binary *database.Binary, dateFormat string) tea.Cmd {
+func fetchAvailableVersions(client *http.Client, binary *database.Binary, dateFormat string) tea.Cmd {
 	return func() tea.Msg {
-		releases, err := github.ListAvailableVersions(binary, 20)
+		releases, err := github.ListAvailableVersions(client, binary, 20)
 		if err != nil {
 			return githubAvailableVersionsMsg{err: err}
 		}
@@ -1590,9 +1650,9 @@ func fetchAvailableVersions(binary *database.Binary, dateFormat string) tea.Cmd 
 }
 
 // fetchReleaseNotes fetches release notes from GitHub for a specific version
-func fetchReleaseNotes(binary *database.Binary, version string, dateFormat string) tea.Cmd {
+func fetchReleaseNotes(client *http.Client, binary *database.Binary, version string, dateFormat string) tea.Cmd {
 	return func() tea.Msg {
-		releaseInfo, err := github.FetchReleaseNotes(binary, version)
+		releaseInfo, err := github.FetchReleaseNotes(client, binary, version)
 		if err != nil {
 			return githubReleaseNotesMsg{err: err}
 		}

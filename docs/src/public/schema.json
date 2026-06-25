@@ -4,10 +4,13 @@
   "title": "binmate Configuration",
   "description": "Configuration schema for binmate CLI",
   "type": "object",
-  "required": ["version", "binaries"],
+  "required": [
+    "version",
+    "binaries"
+  ],
   "properties": {
     "$schema": {
-        "type": "string"
+      "type": "string"
     },
     "version": {
       "type": "integer",
@@ -35,6 +38,26 @@
       },
       "additionalProperties": false
     },
+    "tui": {
+      "type": "object",
+      "description": "Configuration for the interactive (TUI) mode",
+      "properties": {
+          "dateFormat": {
+            "type": "string",
+            "description": "Date format to use in the date displays (e.g., \"2006-01-02 15:04:05\")"
+          },
+          "askpassMode": {
+            "type": "string",
+            "enum": [
+              "startup",
+              "always"
+            ],
+            "default": "startup",
+            "description": "Controls when the askpass script is invoked. \"startup\" (default) resolves the token once when binmate starts. \"always\" invokes the askpass script before each API call that requires authentication."
+          }
+      },
+      "additionalProperties": false
+    },
     "binaries": {
       "type": "array",
       "description": "List of binaries to install and manage",
@@ -46,7 +69,11 @@
     "logLevel": {
       "type": "string",
       "description": "Controls verbosity of application logging",
-      "enum": ["debug", "info", "silent"]
+      "enum": [
+        "debug",
+        "info",
+        "silent"
+      ]
     }
   },
   "definitions": {
@@ -63,7 +90,13 @@
     },
     "binary": {
       "type": "object",
-      "required": ["id", "name", "provider", "path", "format"],
+      "required": [
+        "id",
+        "name",
+        "provider",
+        "path",
+        "format"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -79,7 +112,9 @@
         "provider": {
           "type": "string",
           "description": "Source provider for the binary",
-          "enum": ["github"]
+          "enum": [
+            "github"
+          ]
         },
         "path": {
           "type": "string",
@@ -88,8 +123,12 @@
         },
         "format": {
           "type": "string",
-          "description": "Archive format of the release",
-          "enum": [".tar.gz", ".zip"]
+          "description": "Format of the binary asset",
+          "enum": [
+            ".tar.gz",
+            ".zip",
+            "raw"
+          ]
         },
         "releaseRegex": {
           "type": "string",

@@ -8,13 +8,7 @@ import (
 	"path/filepath"
 )
 
-func DownloadAsset(providerPath string, assetId int, assetName string, authenticated bool) (string, error) {
-	// Create HTTP client with optional authentication
-	client, err := CreateHTTPClient(authenticated)
-	if err != nil {
-		return "", fmt.Errorf("failed to create HTTP client: %w", err)
-	}
-
+func DownloadAsset(client *http.Client, providerPath string, assetId int, assetName string) (string, error) {
 	// Get the asset via the GitHub API rather than the `BrowserDownloadUrl` to support authentication.
 	// BrowserDownloadUrl is a `github.com` URL which does not accept a bearer token.
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/assets/%d", providerPath, assetId)

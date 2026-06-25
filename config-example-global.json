@@ -1,5 +1,5 @@
 {
-  "$schema": "./static/schema.json",
+  "$schema": "./docs/src/public/schema.json",
   "version": 1,
   "global": {
     "installPath": "/usr/local/bin",
