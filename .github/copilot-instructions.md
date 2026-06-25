@@ -2,66 +2,6 @@
 
 ## Agent Instructions
 
-This project uses **bd** (beads) for issue tracking.
-
-### Quick Reference
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd sync               # Sync with git
-```
-
-### Starting a new work session
-
-**MANDATORY WORKFLOW:**
-
-1. **Checkout dev branch** - Switch back to the `dev` branch
-2. **Pull from remote**:
-   ```bash
-   git pull
-   git status  # MUST show "up to date with origin"
-   ```
-3. **Create a new session branch** - Create a new session branch for the current task. Branch name should be in the form `{type}/{issue id}`. For example:
-
-- `bug/bm-nhs` - bug task
-- `feature/bm-nhs` - feature task
-- `task/bm-nhs` - generic task
-
-### Landing the Plane (Session Completion)
-
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
-
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds, formatter
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** 
-  - Provide context for next session
-  - Provide user with a GitHub PR link to start the PR process
-
-**CRITICAL RULES:**
-
-- Always use edit file tool for creating new files or updating existing files
-- When updating tasks with implementation plans, use the `--body-file` bd argument to apply the complete `plan.md` content
-- Use the GitHub MCP tools for GitHub related operations rather than using direct `fetch` requests
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
-
 ### Project Overview
 
 **binmate** is a binary version manager CLI tool written in Go that allows users to install and manage multiple versions of command-line binaries from remote repositories (currently GitHub releases). It features an interactive TUI (Terminal User Interface) built with Bubble Tea for browsing and managing installations.
@@ -69,7 +9,10 @@ bd sync               # Sync with git
 ## Language and Localisation
 
 - Always use UK English rather than US English when generating documentation or code snippets (e.g., "organisation" not "organization", "colour" not "color")
-- Use context7 MCP to get up-to-date library and package documentation when necessary
+
+## General Guidelines
+
+- Ensure new features or changes are documented within the `docs` project
 
 ## Architecture
 
@@ -97,6 +40,7 @@ bd sync               # Sync with git
 ├── main.go                 # Application entry point
 └── .github/
     └── agents/             # Custom Copilot agents
+├── docs/                # Public documentation
 ```
 
 ### Key Components
@@ -156,6 +100,19 @@ bd sync               # Sync with git
 - `init.go`: Initial command for the TUI
 - `update.go`: Handles TUI updates and user interactions
 - `view.go`: Renders the TUI
+
+#### 8. Documentation (`docs/`)
+
+- Contains public-facing documentation and schema definitions
+- Built with [Vitepress](https://vitepress.dev/)
+- Deployed as a static build to GitHub Pages
+- Includes additional static assets under `docs/public` (JSON schema and install scripts)
+- Actual documentation content defined as markdown in `docs/src`
+- Uses a lightly customised Vitepress default theme
+- Runs using bun
+  - `bun dev`: Starts a local development server
+  - `bun build`: Builds the static site for deployment
+  - `bun preview`: Previews the built site locally
 
 ## Development Guidelines
 
