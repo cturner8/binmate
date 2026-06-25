@@ -157,6 +157,10 @@ func TestIsUSTimezone(t *testing.T) {
 }
 
 func TestGetLocaleFromEnv(t *testing.T) {
+	t.Setenv("LANG", "")
+	t.Setenv("LC_ALL", "")
+	t.Setenv("LC_TIME", "")
+
 	// Test empty case
 	if got := getLocaleFromEnv(); got != "" {
 		t.Errorf("getLocaleFromEnv() with no env vars = %q, want empty string", got)
