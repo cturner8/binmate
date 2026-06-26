@@ -148,7 +148,7 @@ func TestSetActiveVersion_WithAlias(t *testing.T) {
 	}
 
 	// Verify symlink uses alias name instead of binary name
-	expectedSymlink := filepath.Join(binDir, "myalias")
+	expectedSymlink := filepath.Join(binDir, "testbin")
 	if symlinkPath != expectedSymlink {
 		t.Errorf("Expected symlink path %s, got %s", expectedSymlink, symlinkPath)
 	}
@@ -160,5 +160,15 @@ func TestSetActiveVersion_WithAlias(t *testing.T) {
 	}
 	if target != binary {
 		t.Errorf("Expected symlink to point to %s, got %s", binary, target)
+	}
+
+	// Verify alias symlink
+	aliasSymlinkPath := filepath.Join(binDir, alias)
+	aliasTarget, err := os.Readlink(aliasSymlinkPath)
+	if err != nil {
+		t.Fatalf("Failed to read alias symlink: %v", err)
+	}
+	if aliasTarget != binary {
+		t.Errorf("Expected alias symlink to point to %s, got %s", binary, aliasTarget)
 	}
 }
