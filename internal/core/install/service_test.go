@@ -3,6 +3,7 @@ package install
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"cturner8/binmate/internal/database"
@@ -46,7 +47,10 @@ func TestInstallBinary_BinaryNotFound(t *testing.T) {
 
 	_, err := InstallBinary("nonexistent", "v1.0.0", dbService)
 	if err == nil {
-		t.Error("Expected error for non-existent binary, got none")
+		t.Errorf("InstallBinary() expected error for non-existent binary, got none")
+	}
+	if !strings.Contains(err.Error(), "binary not found") {
+		t.Errorf("InstallBinary() expected 'binary not found' error, got %v", err)
 	}
 }
 
@@ -68,10 +72,10 @@ func TestInstallBinary_UnsupportedProvider(t *testing.T) {
 
 	_, err := InstallBinary("test", "v1.0.0", dbService)
 	if err == nil {
-		t.Error("Expected error for unsupported provider, got none")
+		t.Errorf("InstallBinary() expected error for unsupported provider, got none")
 	}
-	if err != nil && err.Error() != "only github provider is currently supported" {
-		t.Errorf("Expected provider error, got: %v", err)
+	if !strings.Contains(err.Error(), "only github provider is currently supported") {
+		t.Errorf("InstallBinary() expected 'only github provider is currently supported' error, got %v", err)
 	}
 }
 
@@ -85,7 +89,10 @@ func TestInstallBinary_FetchFails(t *testing.T) {
 	// This should fail at the fetch stage
 	_, err := InstallBinary("test", "v1.0.0", dbService)
 	if err == nil {
-		t.Error("Expected error for fetch failure, got none")
+		t.Errorf("InstallBinary() expected error for fetch failure, got none")
+	}
+	if !strings.Contains(err.Error(), "fetch failed") {
+		t.Errorf("InstallBinary() expected 'fetch failed' error, got %v", err)
 	}
 }
 
@@ -99,7 +106,10 @@ func TestUpdateToLatest(t *testing.T) {
 	// This should fail because we can't actually fetch from GitHub in tests
 	_, err := UpdateToLatest("test", dbService)
 	if err == nil {
-		t.Error("Expected error (fetch failure), got none")
+		t.Errorf("UpdateToLatest() expected error (fetch failure), got none")
+	}
+	if !strings.Contains(err.Error(), "fetch failed") {
+		t.Errorf("UpdateToLatest() expected 'fetch failed' error, got %v", err)
 	}
 }
 
@@ -109,7 +119,10 @@ func TestUpdateToLatest_BinaryNotFound(t *testing.T) {
 
 	_, err := UpdateToLatest("nonexistent", dbService)
 	if err == nil {
-		t.Error("Expected error for non-existent binary, got none")
+		t.Errorf("UpdateToLatest() expected error for non-existent binary, got none")
+	}
+	if !strings.Contains(err.Error(), "binary not found") {
+		t.Errorf("UpdateToLatest() expected 'binary not found' error, got %v", err)
 	}
 }
 
@@ -227,5 +240,36 @@ func TestInstallBinary_InstalledPathStoresActualBinaryPath(t *testing.T) {
 	}
 	if target != binaryPath {
 		t.Errorf("Symlink should point to binary path, got %s, want %s", target, binaryPath)
+	}
+}
+
+func TestInstallBinary_NewClientFails(t *testing.T) {
+	dbService, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// Clear all token sources so NewClientForBinary cannot resolve a token
+	// for an authenticated binary, causing it to return an error.
+	for _, env := range []string{"BINMATE_GITHUB_ASKPASS", "GITHUB_ASKPASS", "BINMATE_GITHUB_TOKEN", "GITHUB_TOKEN"} {
+		t.Setenv(env, "")
+	}
+
+	authenticatedBinary := &database.Binary{
+		UserID:        "authtest",
+		Name:          "authbin",
+		Provider:      "github",
+		ProviderPath:  "owner/repo",
+		Format:        ".tar.gz",
+		Authenticated: true,
+	}
+	if err := dbService.Binaries.Create(authenticatedBinary); err != nil {
+		t.Fatalf("Failed to create test binary: %v", err)
+	}
+
+	_, err := InstallBinary("authtest", "v1.0.0", dbService)
+	if err == nil {
+		t.Errorf("InstallBinary() expected error when client creation fails, got none")
+	}
+	if !strings.Contains(err.Error(), "failed to create HTTP client") {
+		t.Errorf("InstallBinary() expected 'failed to create HTTP client' error, got %v", err)
 	}
 }
