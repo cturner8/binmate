@@ -111,8 +111,7 @@
         },
         "alias": {
           "type": "string",
-          "description": "Alias for the binary",
-          "minLength": 1
+          "description": "Alias for the binary"
         },
         "provider": {
           "type": "string",
