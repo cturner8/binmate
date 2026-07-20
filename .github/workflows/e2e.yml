@@ -116,7 +116,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
       
       - name: Run E2E tests (Unix)
         if: matrix.os != 'windows'
