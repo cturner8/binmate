@@ -1,6 +1,9 @@
 {
   "$schema": "./docs/src/public/schema.json",
   "version": 1,
+  "tui": {
+    "dateFormat": "02/01/2006 15:04"
+  },
   "binaries": [
     {
       "id": "ghcp",
@@ -43,6 +46,13 @@
       "name": "bat",
       "provider": "github",
       "path": "sharkdp/bat",
+      "format": ".tar.gz"
+    },
+    {
+      "id": "lazysql",
+      "name": "lazysql",
+      "provider": "github",
+      "path": "jorgerojas26/lazysql",
       "format": ".tar.gz"
     },
     {

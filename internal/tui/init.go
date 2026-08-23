@@ -1,9 +1,10 @@
 package tui
 
 import (
-	"cturner8/binmate/internal/core/config"
 	"cturner8/binmate/internal/database/repository"
 	"cturner8/binmate/internal/providers/github"
+
+	"log"
 
 	tea "charm.land/bubbletea/v2"
 )
@@ -14,8 +15,11 @@ func (m model) Init() tea.Cmd {
 	}
 
 	// Resolve the GitHub token once at startup unless the config requests per-call resolution.
-	if askpassModeFromConfig(m.config) == "startup" {
+	if m.config.TUI.AskpassMode == "startup" {
+		log.Println("Resolving authentication tokens...")
 		cmds = append(cmds, resolveGithubTokenCmd())
+	} else {
+		log.Printf("Skipping authentication token resolution at startup; will resolve on demand. Mode: %s", m.config.TUI.AskpassMode)
 	}
 
 	return tea.Batch(cmds...)
@@ -36,18 +40,4 @@ func resolveGithubTokenCmd() tea.Cmd {
 		token, err := github.ResolveToken()
 		return githubTokenResolvedMsg{token: token, err: err}
 	}
-}
-
-// askpassModeFromConfig returns the configured askpass mode for the GitHub
-// provider, or an empty string if not set.
-func askpassModeFromConfig(cfg *config.Config) string {
-	if cfg == nil {
-		return ""
-	}
-	if providers := cfg.Global.Providers; providers != nil {
-		if gh, ok := providers["github"]; ok {
-			return gh.AskpassMode
-		}
-	}
-	return ""
 }

@@ -350,9 +350,11 @@ func TestRenderDownloads_LoadingState(t *testing.T) {
 
 func TestRenderConfiguration(t *testing.T) {
 	cfg := &config.Config{
-		Version:    1,
-		DateFormat: "2006-01-02",
-		LogLevel:   "info",
+		Version: 1,
+		TUI: config.TUIConfig{
+			DateFormat: "2006-01-02",
+		},
+		LogLevel: "info",
 		Binaries: []config.Binary{
 			{
 				Id:       "go",
