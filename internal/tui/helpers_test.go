@@ -207,10 +207,10 @@ func TestTruncatePathEnd(t *testing.T) {
 
 func TestPadLeft(t *testing.T) {
 	tests := []struct {
-		name     string
-		text     string
-		width    int
-		minLen   int // minimum expected length
+		name   string
+		text   string
+		width  int
+		minLen int // minimum expected length
 	}{
 		{
 			name:   "pad text to width",
@@ -245,10 +245,10 @@ func TestPadLeft(t *testing.T) {
 
 func TestPadRight(t *testing.T) {
 	tests := []struct {
-		name     string
-		text     string
-		width    int
-		minLen   int // minimum expected length
+		name   string
+		text   string
+		width  int
+		minLen int // minimum expected length
 	}{
 		{
 			name:   "pad text to width",
@@ -283,10 +283,10 @@ func TestPadRight(t *testing.T) {
 
 func TestCenter(t *testing.T) {
 	tests := []struct {
-		name     string
-		text     string
-		width    int
-		minLen   int // minimum expected length
+		name   string
+		text   string
+		width  int
+		minLen int // minimum expected length
 	}{
 		{
 			name:   "center text in width",

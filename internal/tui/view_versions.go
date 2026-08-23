@@ -6,7 +6,7 @@ import (
 
 	"cturner8/binmate/internal/core/format"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // renderVersions renders the versions detail view
