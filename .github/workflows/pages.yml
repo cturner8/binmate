@@ -1,90 +1,40 @@
-name: Deploy docs
+name: Deploy to GitHub Pages
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - "docs/src/**"
+      - "docs/.vitepress/**"
+      - "docs/bun.lock"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      environment: ${{ steps.target.outputs.environment }}
-      artifact_id: ${{ steps.upload.outputs.artifact-id }}
     defaults:
       run:
         working-directory: docs
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Determine target environment
-        id: target
-        working-directory: ${{ github.workspace }}
-        run: |
-          if [ "$GITHUB_REF_NAME" = "main" ]; then
-            echo "environment=prod" >> "$GITHUB_OUTPUT"
-          else
-            echo "environment=dev" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout repository
-        uses: actions/checkout@v7.0.1
-
+        uses: actions/checkout@v7.0.0
       - uses: oven-sh/setup-bun@v2.2.0
-
       - name: Install dependencies
         run: bun install --frozen-lockfile
-
       - name: Build docs site
         run: bun run build
-
-      - name: Upload build artifact
-        id: upload
-        uses: actions/upload-artifact@v7.0.1
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
-          name: docs-build
           path: docs/.vitepress/dist/
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      id-token: write
-    environment:
-      name: ${{ needs.build.outputs.environment }}
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6.3.0
-        with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: eu-west-2
-          mask-aws-account-id: true
-          role-session-name: "${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}"
-          role-duration-seconds: 900
-
-      - name: Verify AWS Credentials
-        run: aws sts get-caller-identity --output off
-
-      - name: Download build artifact
-        id: download
-        uses: actions/download-artifact@v8.0.1
-        with:
-          artifact-ids: ${{ needs.build.outputs.artifact_id }}
-          path: dist
-
-      - name: Sync assets to S3
-        env:
-          DIST: ${{ steps.download.outputs.download-path }}
-          BUCKET: ${{ secrets.AWS_DEPLOY_BUCKET_NAME }}
-        # Content-hashed assets are immutable and safe to cache forever.
-        run: |
-          aws s3 sync "${DIST}/assets" "s3://${BUCKET}/binmate/assets" --sse --delete \
-            --cache-control "public, max-age=31536000, immutable"
-
-      - name: Sync content to S3
-        env:
-          DIST: ${{ steps.download.outputs.download-path }}
-          BUCKET: ${{ secrets.AWS_DEPLOY_BUCKET_NAME }}
-        # HTML and metadata are revalidated on every request.
-        run: |
-          aws s3 sync "${DIST}" "s3://${BUCKET}/binmate" --sse --delete \
-            --exclude "assets/*" \
-            --cache-control "public, max-age=0, must-revalidate"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5.0.0
