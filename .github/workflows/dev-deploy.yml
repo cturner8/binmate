@@ -1,0 +1,10 @@
+name: Deploy docs to dev
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  dev:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      stage: dev
