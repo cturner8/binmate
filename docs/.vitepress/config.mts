@@ -10,9 +10,9 @@ export default defineConfig({
   lastUpdated: true,
 
   head: [
-    ["meta", { name: "theme-color", content: "#00ff7b" }],
+    ["meta", { name: "theme-color", content: "#F97316" }],
     ["meta", { name: "og:type", content: "website" }],
-    ["meta", { name: "og:title", content: "aws binmate" }],
+    ["meta", { name: "og:title", content: "binmate" }],
     [
       "meta",
       {
