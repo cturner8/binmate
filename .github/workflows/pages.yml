@@ -55,8 +55,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
           mask-aws-account-id: true
-          role-session-name: "${{ github.run_id }}"
+          role-session-name: "${{ github.repository }}-${{ github.run_id }}"
           role-duration-seconds: 900
+          transitive-tag-keys: |
+            Repository
+            Workflow
+            Actor
+            Branch
 
       - name: Verify AWS Credentials
         run: aws sts get-caller-identity --output off
