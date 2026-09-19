@@ -70,5 +70,19 @@ jobs:
           artifact-ids: ${{ needs.build.outputs.artifact_id }}
           path: dist
 
-      - name: Deploy to AWS
-        run: aws s3 sync "${{ steps.download.outputs.download-path }}" s3://${{ secrets.AWS_DEPLOY_BUCKET_NAME }}/binmate --sse --delete
+      - name: Sync assets to S3
+        env:
+          DIST: ${{ steps.download.outputs.download-path }}
+          BUCKET: ${{ secrets.AWS_DEPLOY_BUCKET_NAME }}
+        # Content-hashed assets are immutable and safe to cache forever.
+        run: aws s3 sync "${DIST}/assets" "s3://${BUCKET}/binmate/assets" --sse --delete \
+            --cache-control "public, max-age=31536000, immutable"
+
+      - name: Sync content to S3
+        env:
+          DIST: ${{ steps.download.outputs.download-path }}
+          BUCKET: ${{ secrets.AWS_DEPLOY_BUCKET_NAME }}
+        # HTML and metadata are revalidated on every request.
+        run: aws s3 sync "${DIST}" "s3://${BUCKET}/binmate" --sse --delete \
+            --exclude "assets/*" \
+            --cache-control "public, max-age=0, must-revalidate"
