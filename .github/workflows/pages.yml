@@ -6,5 +6,9 @@ on:
 jobs:
   dev:
     uses: ./.github/workflows/deploy.yml
+    permissions:
+      id-token: write
     with:
       stage: dev
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
