@@ -57,7 +57,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
           mask-aws-account-id: true
-          role-session-name: "${{ github.repository }}-${{ github.run_id }}"
+          role-session-name: "${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}"
           role-duration-seconds: 900
 
       - name: Verify AWS Credentials
